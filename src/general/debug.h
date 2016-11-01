@@ -17,6 +17,9 @@ namespace debug {
 const bool kDebug = true;
 const bool kDebugMain = true;
 const bool kDebugBoard = true;
+const bool kDebugSearch = true;
+const bool kDebugUCI = true;
+const bool kDebugEvaluation = true;
 
 /**
  * Prints a command line string if condition is met. By default there
