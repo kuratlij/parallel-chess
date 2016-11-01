@@ -7,7 +7,10 @@
 
 #include <iostream>
 #include "general/debug.h"
+#include "board.h"
 
 int main() {
-
+  Board board;
+  debug::Print("Exiting Program");
+  return 0;
 }
