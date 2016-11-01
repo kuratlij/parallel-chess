@@ -15,6 +15,8 @@
 typedef int64_t BitBoard;
 //A square is defined by its index
 typedef int32_t Square;
+//A move references a source and a destination square but no piece.
+typedef int32_t Move;
 //A piecetype is a reference to one of King,Queen,Rook,Bishop,Knight or Pawn
 typedef int32_t PieceType;
 //A color is a reference to one of the players or to neither.
@@ -36,6 +38,7 @@ const PieceType kNoPiece = 6;
 const int kNumPieceTypes = 7;
 
 const int kNumPlayers = 2;
+const int kNumColors = 3;
 
 
 /**
@@ -44,8 +47,14 @@ const int kNumPlayers = 2;
  * For bit twiddling functions see bitoperations.h
  */
 
-inline int32_t GetSquareX(Square square) { return square % 8; }
-inline int32_t GetSquareY(Square square) { return square / 8; }
+inline int32_t GetSquareX(const Square square) { return square % 8; }
+inline int32_t GetSquareY(const Square square) { return square / 8; }
+
+inline Square GetMoveSource(const Move move) { return move >> 6; }
+inline Square GetMoveDestination(const Move move) { return move & 0x3F; }
+inline Move GetMove(Square source, Square destination) {
+  return (source << 6) | destination;
+}
 
 inline BitBoard GetSquareBitBoard(const Square square) { return 0x1L << square; }
 inline Square GetLowestFilledSquare(BitBoard bb) {
