@@ -32,8 +32,10 @@ public:
   void UnMake(Move move);
   PieceBitboardSet get_piece_bitboards();
   void Print();
+  void AddPiece(Square square, Piece piece);
 private:
   BitBoard piece_bitboards[kNumPlayers][kNumPieceTypes];
+  Piece pieces[kBoardLength*kBoardLength];
   std::vector<Move> move_history;
   //Includes information necessary to restore a previous state.
   std::vector<MoveHistoryInformation> move_history_information;

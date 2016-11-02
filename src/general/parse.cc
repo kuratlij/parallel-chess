@@ -48,5 +48,14 @@ void PrintBitboard(const BitBoard bitboard) {
   }
   std::cout << std::endl;
 }
+
+Square StringToSquare(std::string square_name) {
+  return (square_name[0]-'a') + (square_name[1]-'1') * 8;
+}
+
+std::string SquareToString(Square square) {
+  return std::string(1,(square % 8) + 'a') + std::string(1,(square / 8) + '1');
+}
+
 }
 

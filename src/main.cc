@@ -12,6 +12,7 @@
 int main() {
   Board board;
   parse::PrintBitboard(0x1L);
+  board.Print();
   debug::Print("Exiting Program");
   return 0;
 }

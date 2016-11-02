@@ -19,7 +19,7 @@ typedef int32_t Square;
 typedef int32_t Move;
 //A piecetype is a reference to one of King,Queen,Rook,Bishop,Knight or Pawn
 typedef int32_t PieceType;
-//A color is a reference to one of the players or to neither.
+//A color is a reference to one of the players.
 typedef int32_t Color;
 //A piece is an object with a PieceType, Color and Square
 typedef int32_t Piece;
@@ -29,7 +29,6 @@ typedef int32_t Score;
 
 const Color kWhite = 0;
 const Color kBlack = 1;
-const Color kEmpty = 2;
 
 const PieceType kKing = 0;
 const PieceType kQueen = 1;
@@ -41,7 +40,6 @@ const PieceType kNoPiece = 6;
 const int kNumPieceTypes = 7;
 
 const int kNumPlayers = 2;
-const int kNumColors = 3;
 
 const int kBoardLength = 8;
 
@@ -59,6 +57,12 @@ inline Square GetMoveDestination(const Move move) { return move & 0x3F; }
 inline Move GetMove(Square source, Square destination) {
   return (source << 6) | destination;
 }
+
+inline Piece GetPiece(Color color, PieceType piece_type) {
+  return (color << 3) | piece_type;
+}
+inline Color GetPieceColor(Piece piece) { return piece >> 3; }
+inline PieceType GetPieceType(Piece piece) { return piece & 0x7; }
 
 inline BitBoard GetSquareBitBoard(const Square square) { return 0x1L << square; }
 inline Square GetLowestFilledSquare(BitBoard bb) {
