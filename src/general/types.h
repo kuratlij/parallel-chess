@@ -23,6 +23,9 @@ typedef int32_t PieceType;
 typedef int32_t Color;
 //A piece is an object with a PieceType, Color and Square
 typedef int32_t Piece;
+//A score is a value assigned to a position which represents how good the position
+//for the player to move.
+typedef int32_t Score;
 
 const Color kWhite = 0;
 const Color kBlack = 1;
@@ -40,13 +43,14 @@ const int kNumPieceTypes = 7;
 const int kNumPlayers = 2;
 const int kNumColors = 3;
 
+const int kBoardLength = 8;
+
 
 /**
  * In the following we define data extraction and translation functions,
  * however we will not be defining bit data manipulation functions.
  * For bit twiddling functions see bitoperations.h
  */
-
 inline int32_t GetSquareX(const Square square) { return square % 8; }
 inline int32_t GetSquareY(const Square square) { return square / 8; }
 

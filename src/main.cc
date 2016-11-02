@@ -6,11 +6,12 @@
  */
 
 #include <iostream>
-#include "general/debug.h"
+#include "general_headers.h"
 #include "board.h"
 
 int main() {
   Board board;
+  parse::PrintBitboard(0x1L);
   debug::Print("Exiting Program");
   return 0;
 }

@@ -8,6 +8,9 @@
 #ifndef GENERAL_PARSE_H_
 #define GENERAL_PARSE_H_
 
+#include <string>
+#include "types.h"
+
 /**
  * The unicode namspace contains all the useful unicode characters which can be
  * used to print pretty unicode chess boards.
@@ -30,9 +33,21 @@ const static std::string b_king = "\u265A", b_queen = "\u265B",
 const static std::string no_piece = " ";
 
 const static std::string pieces[2][7] = {
-    { w_pawn, w_knight, w_bishop, w_rook, w_queen, w_king, no_piece },
-    { b_pawn, b_knight, b_bishop, b_rook, b_queen, b_king, no_piece }
+    { w_king, w_queen, w_rook, w_bishop, w_knight, w_pawn, no_piece },
+    { b_king, b_queen, b_rook, b_bishop, b_knight, b_pawn, no_piece }
 };
+
+}
+
+namespace parse {
+
+//Translates the name of a square to its index representation
+Square StringToSquare(std::string square_name);
+//Retrieves the name of a square from its index representation
+std::string SquareToString(Square square);
+
+void PrintBitboard(const BitBoard bitboard);
+
 }
 
 #endif /* GENERAL_PARSE_H_ */
