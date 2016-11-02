@@ -8,7 +8,7 @@
 #ifndef BOARD_H_
 #define BOARD_H_
 
-#include "general/types.h"
+#include "general_headers.h"
 #include <vector>
 
 /**
@@ -17,17 +17,28 @@
  */
 typedef int64_t MoveHistoryInformation;
 
+struct PieceBitboardSet {
+  BitBoard piece_bitboards[kNumPlayers][kNumPieceTypes];
+};
+
 class Board{
 public:
+  //Board constructor initializes the board to the starting position.
   Board();
-
+  //Sets the board to position defined by the argument FEN code.
+  //Previous state information is reset.
+  void SetBoard(std::string fen_code);
   void Make(Move move);
-  //This is public for now, optimally we should make this private and add
-  //without setters.
-  BitBoard piece_bitboards[kNumPlayers][kNumPieceTypes];
+  void UnMake(Move move);
+  PieceBitboardSet get_piece_bitboards();
+  void Print();
 private:
+  BitBoard piece_bitboards[kNumPlayers][kNumPieceTypes];
   std::vector<Move> move_history;
+  //Includes information necessary to restore a previous state.
   std::vector<MoveHistoryInformation> move_history_information;
+  //4 bits are set representing white and black, queen- and kingside castling
+  int32_t castling_rights;
 };
 
 #endif /* BOARD_H_ */
