@@ -11,7 +11,7 @@
 
 int main() {
   Board board;
-  parse::PrintBitboard(0x1L);
+  board.Make(GetMove(parse::StringToSquare("e2"), parse::StringToSquare("e4")));
   board.Print();
   debug::Print("Exiting Program");
   return 0;

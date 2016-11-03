@@ -15,8 +15,11 @@
 typedef int64_t BitBoard;
 //A square is defined by its index
 typedef int32_t Square;
-//A move references a source and a destination square but no piece.
+//A move references a source, a destination square and a move type, but no piece.
 typedef int32_t Move;
+//A movetype references whether a move is a normal move or a special move
+//such as a pawn promotion or castling.
+typedef Move MoveType;
 //A piecetype is a reference to one of King,Queen,Rook,Bishop,Knight or Pawn
 typedef int32_t PieceType;
 //A color is a reference to one of the players.
@@ -43,6 +46,17 @@ const int kNumPlayers = 2;
 
 const int kBoardLength = 8;
 
+const MoveType kNormalMove = 0;
+const MoveType kCastle = 1;
+const MoveType kDoublePawnMove = 2;
+const MoveType kEnPassant = 3;
+const MoveType kCapture = 4;
+//To get promotion piece we can subtract (kQeenPromotion - 1)
+const MoveType kQueenPromotion = 5;
+const MoveType kRookPromotion = 6;
+const MoveType kBishopPromotion = 7;
+const MoveType kKnightPromotion = 8;
+
 
 /**
  * In the following we define data extraction and translation functions,
@@ -52,10 +66,11 @@ const int kBoardLength = 8;
 inline int32_t GetSquareX(const Square square) { return square % 8; }
 inline int32_t GetSquareY(const Square square) { return square / 8; }
 
-inline Square GetMoveSource(const Move move) { return move >> 6; }
+inline Square GetMoveSource(const Move move) { return (move >> 6) & 0x3F; }
 inline Square GetMoveDestination(const Move move) { return move & 0x3F; }
-inline Move GetMove(Square source, Square destination) {
-  return (source << 6) | destination;
+inline MoveType GetMoveType(const Move move) { return move >> 12; }
+inline Move GetMove(Square source, Square destination, MoveType move_type = 0) {
+  return move_type << 12 | (source << 6) | destination;
 }
 
 inline Piece GetPiece(Color color, PieceType piece_type) {

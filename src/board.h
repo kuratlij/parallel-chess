@@ -28,12 +28,20 @@ public:
   //Sets the board to position defined by the argument FEN code.
   //Previous state information is reset.
   void SetBoard(std::string fen_code);
+  std::vector<Move> GetMoves();
   void Make(Move move);
-  void UnMake(Move move);
+  void UnMake();
+
+  //This needs to be public in order for the evaluation function.
   PieceBitboardSet get_piece_bitboards();
+
+  //Print unicode chess board.
   void Print();
-  void AddPiece(Square square, Piece piece);
 private:
+  void SwapTurn();
+  void AddPiece(Square square, Piece piece);
+  Piece RemovePiece(Square square);
+  Piece MovePiece(Square source, Square destination);
   BitBoard piece_bitboards[kNumPlayers][kNumPieceTypes];
   Piece pieces[kBoardLength*kBoardLength];
   std::vector<Move> move_history;
@@ -41,6 +49,8 @@ private:
   std::vector<MoveHistoryInformation> move_history_information;
   //4 bits are set representing white and black, queen- and kingside castling
   int32_t castling_rights;
+  Square en_passant;
+  Color turn;
 };
 
 #endif /* BOARD_H_ */

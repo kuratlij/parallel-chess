@@ -47,13 +47,101 @@ Board::Board() {
     }
   }
   castling_rights = 15;
+  turn = kWhite;
   debug::Print("constructed board", debug::kDebugBoard);
 }
 
 void Board::AddPiece(Square square, Piece piece) {
   piece_bitboards[GetPieceColor(piece)][GetPieceType(piece)] |= GetSquareBitBoard(square);
   pieces[square] = piece;
-  debug::Print("added piece to square " + parse::SquareToString(square), debug::kDebugBoard);
+}
+
+Piece Board::RemovePiece(Square square) {
+  Piece piece = pieces[square];
+  pieces[square] = kNoPiece;
+  piece_bitboards[GetPieceColor(piece)][GetPieceType(piece)] ^= GetSquareBitBoard(square);
+  return piece;
+}
+
+Piece Board::MovePiece(Square source, Square destination) {
+  Piece piece = RemovePiece(destination);
+  AddPiece(destination, RemovePiece(source));
+  if (debug::kDebugBoard) {
+    debug::Print("moved piece from " + parse::SquareToString(source)
+        + " to " + parse::SquareToString(destination));
+  }
+  return piece;
+}
+
+void Board::SwapTurn() {
+  turn ^= 0x1;
+}
+
+void Board::Make(Move move) {
+  MoveHistoryInformation information = 0;
+  information |= RemovePiece(GetMoveDestination(move));
+  MovePiece(GetMoveSource(move),GetMoveDestination(move));
+  information |= (en_passant << 4);
+  //We default our ep square to a place the opponent will never be able to ep.
+  en_passant = 56 - (56 * turn);
+  switch (GetMoveType(move)) {
+  case kDoublePawnMove:
+    en_passant = GetMoveDestination(move) - 8 + (2*8) * turn;
+    break;
+  case kCastle:
+    if (GetMoveDestination(move) < GetMoveSource(move)) {
+      //Queen-side castling
+      MovePiece(GetMoveSource(move)-4, GetMoveSource(move)-1);
+    }
+    else {
+      //King-side castling
+      MovePiece(GetMoveSource(move)+3, GetMoveSource(move)+1);
+    }
+    break;
+  case kEnPassant:
+    RemovePiece(GetMoveDestination(move) - 8 + (2*8) * turn);
+  default:
+    if (GetMoveType(move) >= kQueenPromotion) {
+      RemovePiece(GetMoveDestination(move));
+      AddPiece(GetMoveDestination(move),
+          GetPiece(turn, GetMoveType(move) - kQueenPromotion + kQueen));
+    }
+    break;
+  }
+  move_history_information.emplace_back(information);
+  move_history.emplace_back(move);
+  SwapTurn();
+}
+
+void Board::UnMake() {
+  SwapTurn();
+  Move move = move_history.back();
+  move_history.pop_back();
+  MoveHistoryInformation info = move_history_information.back();
+  move_history_information.pop_back();
+  AddPiece(GetMoveSource(move), RemovePiece(GetMoveDestination(move)));
+  AddPiece(GetMoveDestination(move), info & 0xF);
+  en_passant = info >> 4;
+  switch(GetMoveType(move)) {
+  case kEnPassant:
+    RemovePiece(GetMoveDestination(move) - 8 + (2*8) * turn);
+  case kCastle:
+    if (GetMoveDestination(move) < GetMoveSource(move)) {
+      //Queen-side castling
+      MovePiece(GetMoveSource(move)-1, GetMoveSource(move)-4);
+    }
+    else {
+      //King-side castling
+      MovePiece(GetMoveSource(move)+1, GetMoveSource(move)+3);
+    }
+    break;
+  default:
+    if (GetMoveType(move) >= kQueenPromotion) {
+      RemovePiece(GetMoveSource(move));
+      AddPiece(GetMoveSource(move), GetPiece(turn, kPawn));
+    }
+    break;
+  }
 }
 
 void Board::Print() {
