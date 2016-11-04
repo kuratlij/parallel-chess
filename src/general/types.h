@@ -80,10 +80,6 @@ inline Color GetPieceColor(Piece piece) { return piece >> 3; }
 inline PieceType GetPieceType(Piece piece) { return piece & 0x7; }
 
 inline BitBoard GetSquareBitBoard(const Square square) { return 0x1L << square; }
-inline Square GetLowestFilledSquare(BitBoard bb) {
-  debug::Error("GetLowestFilledSquare(BitBoard bb) in types.h is not implemented");
-  return 0;
-}
 
 
 #endif /* GENERAL_TYPES_H_ */
