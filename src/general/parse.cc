@@ -57,5 +57,9 @@ std::string SquareToString(Square square) {
   return std::string(1,(square % 8) + 'a') + std::string(1,(square / 8) + '1');
 }
 
+BitBoard StringToBitBoard(std::string square_name) {
+  return GetSquareBitBoard(StringToSquare(square_name));
+}
+
 }
 

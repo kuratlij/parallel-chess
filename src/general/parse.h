@@ -45,6 +45,7 @@ namespace parse {
 Square StringToSquare(std::string square_name);
 //Retrieves the name of a square from its index representation
 std::string SquareToString(Square square);
+BitBoard StringToBitBoard(std::string square_name);
 
 void PrintBitboard(const BitBoard bitboard);
 
