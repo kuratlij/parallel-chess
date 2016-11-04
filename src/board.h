@@ -42,6 +42,7 @@ private:
   void AddPiece(Square square, Piece piece);
   Piece RemovePiece(Square square);
   Piece MovePiece(Square source, Square destination);
+  BitBoard PlayerBitBoardControl(Color color);
   BitBoard piece_bitboards[kNumPlayers][kNumPieceTypes];
   Piece pieces[kBoardLength*kBoardLength];
   std::vector<Move> move_history;

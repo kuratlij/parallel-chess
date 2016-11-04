@@ -14,6 +14,7 @@
 #include "general/types.h"
 #include "general/debug.h"
 #include "general/parse.h"
+#include "general/bit_operations.h"
 
 
 #endif /* GENERAL_HEADERS_H_ */
