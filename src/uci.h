@@ -11,8 +11,16 @@
 #ifndef UCI_H_
 #define UCI_H_
 
+#include <string>
+#include <sstream>
+#include <iostream>
+#include "general_headers.h"
+#include "board.h"
+
 namespace uci{
 
+//Runs the UCI protocol until the client exits
+void Loop();
 
 }
 

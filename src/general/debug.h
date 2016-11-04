@@ -14,7 +14,7 @@
 
 namespace debug {
 
-const bool kDebug = true;
+const bool kDebug = false;
 const bool kDebugMain = true;
 const bool kDebugBoard = true;
 const bool kDebugSearch = true;
