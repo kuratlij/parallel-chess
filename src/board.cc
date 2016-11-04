@@ -9,6 +9,17 @@
 
 namespace {
 
+const BitBoard fourth_row = parse::StringToBitBoard("a4") | parse::StringToBitBoard("b4")
+                      | parse::StringToBitBoard("c4") | parse::StringToBitBoard("d4")
+                      | parse::StringToBitBoard("e4") | parse::StringToBitBoard("f4")
+                      | parse::StringToBitBoard("g4") | parse::StringToBitBoard("h4");
+
+const BitBoard fifth_row = fourth_row << 8;
+
+}
+
+namespace {
+
 void AddMoves(std::vector<Move> &move_list, BitBoard source, BitBoard destinations,
     BitBoard enemy_pieces) {
   Square source_square = bitops::NumberOfTrailingZeros(source);
@@ -195,11 +206,10 @@ BitBoard Board::PlayerBitBoardControl(Color color) {
   BitBoard under_control = 0;
   BitBoard empty = ~0;
   for (Color player = kWhite; player <= kBlack; player++) {
-    for (PieceType piece_type = kKing; piece_type < kPawn; piece_type++) {
+    for (PieceType piece_type = kKing; piece_type <= kPawn; piece_type++) {
       empty &= ~piece_bitboards[player][piece_type];
     }
   }
-
   if (color == kWhite) {
     under_control |= bitops::NE(piece_bitboards[color][kPawn]);
     under_control |= bitops::NW(piece_bitboards[color][kPawn]);
@@ -209,24 +219,24 @@ BitBoard Board::PlayerBitBoardControl(Color color) {
     under_control |= bitops::SW(piece_bitboards[color][kPawn]);
   }
   BitBoard diag = piece_bitboards[color][kQueen] | piece_bitboards[color][kBishop];
-  BitBoard ne_diag = bitops::FillNorthEast(diag, empty) | ~diag;
+  BitBoard ne_diag = bitops::FillNorthEast(diag, empty) & ~diag;
   ne_diag |= bitops::NE(ne_diag);
-  BitBoard nw_diag = bitops::FillNorthWest(diag, empty) | ~diag;
+  BitBoard nw_diag = bitops::FillNorthWest(diag, empty) & ~diag;
   nw_diag |= bitops::NW(nw_diag);
-  BitBoard se_diag = bitops::FillSouthEast(diag, empty) | ~diag;
+  BitBoard se_diag = bitops::FillSouthEast(diag, empty) & ~diag;
   se_diag |= bitops::SE(se_diag);
-  BitBoard sw_diag = bitops::FillSouthWest(diag, empty) | ~diag;
+  BitBoard sw_diag = bitops::FillSouthWest(diag, empty) & ~diag;
   sw_diag |= bitops::NW(sw_diag);
   under_control |= ne_diag | nw_diag | se_diag | sw_diag;
 
   BitBoard vec = piece_bitboards[color][kQueen] | piece_bitboards[color][kRook];
-  BitBoard n_vec = bitops::FillNorth(vec, empty) | ~vec;
+  BitBoard n_vec = bitops::FillNorth(vec, empty) & ~vec;
   n_vec |= bitops::N(n_vec);
-  BitBoard s_vec = bitops::FillSouth(vec, empty) | ~vec;
+  BitBoard s_vec = bitops::FillSouth(vec, empty) & ~vec;
   s_vec |= bitops::S(s_vec);
-  BitBoard e_vec = bitops::FillEast(vec, empty) | ~vec;
+  BitBoard e_vec = bitops::FillEast(vec, empty) & ~vec;
   e_vec |= bitops::E(e_vec);
-  BitBoard w_vec = bitops::FillWest(vec, empty) | ~vec;
+  BitBoard w_vec = bitops::FillWest(vec, empty) & ~vec;
   w_vec |= bitops::W(w_vec);
   under_control |= n_vec | s_vec | e_vec | w_vec;
 
@@ -239,6 +249,7 @@ BitBoard Board::PlayerBitBoardControl(Color color) {
   king |= bitops::E(king) | bitops::W(king);
   king |= bitops::N(king) | bitops::S(king);
   under_control |= king & ~piece_bitboards[color][kKing];
+  //parse::PrintBitboard(under_control);
   return under_control;
 }
 
@@ -252,52 +263,138 @@ std::vector<Move> Board::GetMoves() {
   }
   BitBoard empty = ~own_pieces & ~enemy_pieces;
 
-  //Add king moves
+  //King
+  //TODO: Add castling
   BitBoard king = piece_bitboards[turn][kKing];
   king |= bitops::E(king) | bitops::W(king);
   king |= bitops::N(king) | bitops::S(king);
   king &= ~own_pieces;
   AddMoves(moves, piece_bitboards[turn][kKing], king, enemy_pieces);
-  //TODO: Add castling
 
-  //Add queen moves
+  //Vertical/Horizontal Sliders
   BitBoard vertical_movers = piece_bitboards[turn][kQueen]
                            | piece_bitboards[turn][kRook];
   while (vertical_movers) {
     BitBoard mover = bitops::GetLSB(vertical_movers);
-    BitBoard n_vec = bitops::FillNorth(mover, empty) | ~mover;
+    BitBoard n_vec = bitops::FillNorth(mover, empty);
     n_vec |= bitops::N(n_vec);
-    BitBoard s_vec = bitops::FillSouth(mover, empty) | ~mover;
+    BitBoard s_vec = bitops::FillSouth(mover, empty);
     s_vec |= bitops::S(s_vec);
-    BitBoard e_vec = bitops::FillEast(mover, empty) | ~mover;
+    BitBoard e_vec = bitops::FillEast(mover, empty);
     e_vec |= bitops::E(e_vec);
-    BitBoard w_vec = bitops::FillWest(mover, empty) | ~mover;
+    BitBoard w_vec = bitops::FillWest(mover, empty);
     w_vec |= bitops::W(w_vec);
     BitBoard destinations = (n_vec | s_vec | e_vec | w_vec) & ~own_pieces;
     AddMoves(moves, mover, destinations, enemy_pieces);
     bitops::PopLSB(vertical_movers);
   }
 
-  //Add queen moves
+  //Diagonal Sliders
   BitBoard diagonal_movers = piece_bitboards[turn][kQueen]
                            | piece_bitboards[turn][kBishop];
   while (diagonal_movers) {
     BitBoard mover = bitops::GetLSB(diagonal_movers);
-    BitBoard ne_diag = bitops::FillNorthEast(mover, empty) | ~mover;
+    BitBoard ne_diag = bitops::FillNorthEast(mover, empty);
     ne_diag |= bitops::NE(ne_diag);
-    BitBoard nw_diag = bitops::FillNorthWest(mover, empty) | ~mover;
+    BitBoard nw_diag = bitops::FillNorthWest(mover, empty);
     nw_diag |= bitops::NW(nw_diag);
-    BitBoard se_diag = bitops::FillSouthEast(mover, empty) | ~mover;
+    BitBoard se_diag = bitops::FillSouthEast(mover, empty);
     se_diag |= bitops::SE(se_diag);
-    BitBoard sw_diag = bitops::FillSouthWest(mover, empty) | ~mover;
+    BitBoard sw_diag = bitops::FillSouthWest(mover, empty);
     sw_diag |= bitops::NW(sw_diag);
     BitBoard destinations = (ne_diag | nw_diag | se_diag | sw_diag) & ~own_pieces;
     AddMoves(moves, mover, destinations, enemy_pieces);
     bitops::PopLSB(diagonal_movers);
   }
 
+  //Knight moves
+  BitBoard knights = piece_bitboards[turn][kKnight];
+  while (knights) {
+    BitBoard knight = bitops::GetLSB(knights);
+    BitBoard vec = bitops::N(bitops::N(knight)) | bitops::S(bitops::S(knight));
+    BitBoard destinations = bitops::E(vec) | bitops::W(vec);
+    vec = bitops::E(bitops::E(knight)) | bitops::W(bitops::W(knight));
+    destinations |= bitops::N(vec) | bitops::S(vec);
+    destinations &= ~own_pieces;
+    AddMoves(moves, knight, destinations, enemy_pieces);
+    bitops::PopLSB(knights);
+  }
+
+  //Pawns
+  //TODO: Add promotions and en passant capturing
+  if (turn == kWhite) {
+    BitBoard single_push = bitops::N(piece_bitboards[kWhite][kPawn])
+                         & empty;
+    BitBoard double_push = bitops::N(single_push) & empty & fourth_row;
+    while (single_push) {
+      BitBoard destination = bitops::NumberOfTrailingZeros(
+          bitops::GetLSB(single_push));
+      moves.emplace_back(GetMove(destination-8, destination, kNormalMove));
+      bitops::PopLSB(single_push);
+    }
+    while (double_push) {
+      BitBoard destination = bitops::NumberOfTrailingZeros(
+          bitops::GetLSB(double_push));
+      moves.emplace_back(GetMove(destination-16, destination, kDoublePawnMove));
+      bitops::PopLSB(double_push);
+    }
+    BitBoard ne_captures = bitops::NE(piece_bitboards[kWhite][kPawn])
+                         & enemy_pieces;
+    while (ne_captures) {
+      BitBoard destination = bitops::NumberOfTrailingZeros(
+          bitops::GetLSB(ne_captures));
+      moves.emplace_back(GetMove(destination-9, destination, kCapture));
+      bitops::PopLSB(ne_captures);
+    }
+    BitBoard nw_captures = bitops::NW(piece_bitboards[kWhite][kPawn])
+                         & enemy_pieces;
+    while (nw_captures) {
+      BitBoard destination = bitops::NumberOfTrailingZeros(
+          bitops::GetLSB(nw_captures));
+      moves.emplace_back(GetMove(destination-7, destination, kCapture));
+      bitops::PopLSB(nw_captures);
+    }
+
+  }
+  else {
+    BitBoard single_push = bitops::S(piece_bitboards[kBlack][kPawn])
+                         & empty;
+    BitBoard double_push = bitops::S(single_push) & empty & fifth_row;
+    while (single_push) {
+      BitBoard destination = bitops::NumberOfTrailingZeros(
+          bitops::GetLSB(single_push));
+      moves.emplace_back(GetMove(destination+8, destination, kNormalMove));
+      bitops::PopLSB(single_push);
+    }
+    while (double_push) {
+      BitBoard destination = bitops::NumberOfTrailingZeros(
+          bitops::GetLSB(double_push));
+      moves.emplace_back(GetMove(destination+16, destination, kDoublePawnMove));
+      bitops::PopLSB(double_push);
+    }
+    BitBoard ne_captures = bitops::SE(piece_bitboards[kBlack][kPawn])
+                         & enemy_pieces;
+    while (ne_captures) {
+      BitBoard destination = bitops::NumberOfTrailingZeros(
+          bitops::GetLSB(ne_captures));
+      moves.emplace_back(GetMove(destination+7, destination, kCapture));
+      bitops::PopLSB(ne_captures);
+    }
+    BitBoard nw_captures = bitops::SW(piece_bitboards[kBlack][kPawn])
+                         & enemy_pieces;
+    while (nw_captures) {
+      BitBoard destination = bitops::NumberOfTrailingZeros(
+          bitops::GetLSB(nw_captures));
+      moves.emplace_back(GetMove(destination+9, destination, kCapture));
+      bitops::PopLSB(nw_captures);
+    }
+
+
+  }
+
   //Now we need to remove illegal moves.
   std::vector<Move> legal_moves;
+  std::cout << "number of pseudolegal moves: " << moves.size() << std::endl;
   for (Move move : moves) {
     Make(move);
     if (!(piece_bitboards[turn^0x1][kKing] & PlayerBitBoardControl(turn))) {

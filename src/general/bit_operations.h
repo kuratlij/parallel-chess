@@ -13,17 +13,6 @@
 
 namespace bitops {
 
-const BitBoard a_file = parse::StringToBitBoard("a1") | parse::StringToBitBoard("a2")
-                      | parse::StringToBitBoard("a3") | parse::StringToBitBoard("a4")
-                      | parse::StringToBitBoard("a5") | parse::StringToBitBoard("a6")
-                      | parse::StringToBitBoard("a7") | parse::StringToBitBoard("a8");
-
-const BitBoard h_file = parse::StringToBitBoard("h1") | parse::StringToBitBoard("h2")
-                      | parse::StringToBitBoard("h3") | parse::StringToBitBoard("h4")
-                      | parse::StringToBitBoard("h5") | parse::StringToBitBoard("h6")
-                      | parse::StringToBitBoard("h7") | parse::StringToBitBoard("h8");
-
-
 BitBoard N(BitBoard bb);
 BitBoard S(BitBoard bb);
 BitBoard E(BitBoard bb);
