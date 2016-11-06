@@ -66,6 +66,12 @@ void Loop() {
       Reply(kEngineAuthorPrefix + settings::engine_author);
       Reply(kOk);
     }
+    else if (Equals(command, "print_moves")) {
+      std::vector<Move> moves = board.GetMoves();
+      for (unsigned int i = 0; i < moves.size(); i++) {
+        std::cout << parse::MoveToString(moves[i]) << std::endl;
+      }
+    }
     else if (Equals(command, "position")) {
       if (index < tokens.size()) {
         std::string arg = tokens[index++];
@@ -84,7 +90,6 @@ void Loop() {
                   && GetMoveDestination(moves[i]) == GetMoveDestination(move)
                   && (GetMoveType(moves[i]) < kQueenPromotion
                       || GetMoveType(moves[i]) == GetMoveType(move))) {
-                std::cout << parse::MoveToString(moves[i]) << std::endl;
                 board.Make(moves[i]);
                 break;
               }
@@ -92,6 +97,11 @@ void Loop() {
           }
         }
       }
+    }
+    else if (Equals(command, "go")) {
+      Move move = search::GetRandomMove(board);
+      board.Make(move);
+      std::cout << "bestmove " << parse::MoveToString(move) << std::endl;
     }
     else {
       Reply("Received unknown command: " + command);

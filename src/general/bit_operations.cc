@@ -27,8 +27,8 @@ BitBoard N(BitBoard bb) {
   return bb << 8;
 }
 
-BitBoard S(BitBoard bb) {
-  return bb >> 8;
+BitBoard S(const BitBoard bb) {
+  return (bb >> 8);
 }
 
 BitBoard E(BitBoard bb) {
@@ -65,31 +65,31 @@ BitBoard FillNorth(BitBoard bb, BitBoard empty) {
 }
 
 BitBoard FillSouth(BitBoard bb, BitBoard empty) {
-  bb |= empty & (bb >> 8);
-  empty &= empty >> 8;
-  bb |= empty & (bb >> 16);
-  empty &= empty >> 16;
+  bb |= (empty & (bb >> 8));
+  empty &= (empty >> 8);
+  bb |= (empty & (bb >> 16));
+  empty &= (empty >> 16);
   bb |= empty & (bb >> 32);
   return bb;
 }
 
 BitBoard FillEast(BitBoard bb, BitBoard empty) {
   empty &= ~a_file;
-  bb |= empty & (bb >> 1);
-  empty &= empty >> 1;
-  bb |= empty & (bb >> 2);
-  empty &= empty >> 2;
-  bb |= empty & (bb >> 4);
-  return bb;
-}
-
-BitBoard FillWest(BitBoard bb, BitBoard empty) {
-  empty &= ~h_file;
   bb |= empty & (bb << 1);
   empty &= empty << 1;
   bb |= empty & (bb << 2);
   empty &= empty << 2;
   bb |= empty & (bb << 4);
+  return bb;
+}
+
+BitBoard FillWest(BitBoard bb, BitBoard empty) {
+  empty &= ~h_file;
+  bb |= empty & (bb >> 1);
+  empty &= empty >> 1;
+  bb |= empty & (bb >> 2);
+  empty &= empty >> 2;
+  bb |= empty & (bb >> 4);
   return bb;
 }
 

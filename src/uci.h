@@ -16,6 +16,7 @@
 #include <iostream>
 #include "general_headers.h"
 #include "board.h"
+#include "search.h"
 
 namespace uci{
 

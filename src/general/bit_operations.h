@@ -14,7 +14,7 @@
 namespace bitops {
 
 BitBoard N(BitBoard bb);
-BitBoard S(BitBoard bb);
+BitBoard S(const BitBoard bb);
 BitBoard E(BitBoard bb);
 BitBoard W(BitBoard bb);
 BitBoard NE(BitBoard bb);

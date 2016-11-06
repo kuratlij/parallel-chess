@@ -247,24 +247,24 @@ BitBoard Board::PlayerBitBoardControl(Color color) {
     under_control |= bitops::SW(piece_bitboards[color][kPawn]);
   }
   BitBoard diag = piece_bitboards[color][kQueen] | piece_bitboards[color][kBishop];
-  BitBoard ne_diag = bitops::FillNorthEast(diag, empty) & ~diag;
+  BitBoard ne_diag = bitops::FillNorthEast(diag, empty);
   ne_diag |= bitops::NE(ne_diag);
-  BitBoard nw_diag = bitops::FillNorthWest(diag, empty) & ~diag;
+  BitBoard nw_diag = bitops::FillNorthWest(diag, empty);
   nw_diag |= bitops::NW(nw_diag);
-  BitBoard se_diag = bitops::FillSouthEast(diag, empty) & ~diag;
+  BitBoard se_diag = bitops::FillSouthEast(diag, empty);
   se_diag |= bitops::SE(se_diag);
-  BitBoard sw_diag = bitops::FillSouthWest(diag, empty) & ~diag;
+  BitBoard sw_diag = bitops::FillSouthWest(diag, empty);
   sw_diag |= bitops::NW(sw_diag);
   under_control |= ne_diag | nw_diag | se_diag | sw_diag;
 
   BitBoard vec = piece_bitboards[color][kQueen] | piece_bitboards[color][kRook];
-  BitBoard n_vec = bitops::FillNorth(vec, empty) & ~vec;
+  BitBoard n_vec = bitops::FillNorth(vec, empty);
   n_vec |= bitops::N(n_vec);
-  BitBoard s_vec = bitops::FillSouth(vec, empty) & ~vec;
+  BitBoard s_vec = bitops::FillSouth(vec, empty);
   s_vec |= bitops::S(s_vec);
-  BitBoard e_vec = bitops::FillEast(vec, empty) & ~vec;
+  BitBoard e_vec = bitops::FillEast(vec, empty);
   e_vec |= bitops::E(e_vec);
-  BitBoard w_vec = bitops::FillWest(vec, empty) & ~vec;
+  BitBoard w_vec = bitops::FillWest(vec, empty);
   w_vec |= bitops::W(w_vec);
   under_control |= n_vec | s_vec | e_vec | w_vec;
 
@@ -289,7 +289,7 @@ std::vector<Move> Board::GetMoves() {
     own_pieces |= piece_bitboards[turn][piece_type];
     enemy_pieces |= piece_bitboards[turn^0x1][piece_type];
   }
-  BitBoard empty = ~own_pieces & ~enemy_pieces;
+  BitBoard empty = (~own_pieces) & (~enemy_pieces);
 
   //King
   //TODO: Add castling
@@ -329,7 +329,7 @@ std::vector<Move> Board::GetMoves() {
     BitBoard se_diag = bitops::FillSouthEast(mover, empty);
     se_diag |= bitops::SE(se_diag);
     BitBoard sw_diag = bitops::FillSouthWest(mover, empty);
-    sw_diag |= bitops::NW(sw_diag);
+    sw_diag |= bitops::SW(sw_diag);
     BitBoard destinations = (ne_diag | nw_diag | se_diag | sw_diag) & ~own_pieces;
     AddMoves(moves, mover, destinations, enemy_pieces);
     bitops::PopLSB(diagonal_movers);
@@ -422,11 +422,20 @@ std::vector<Move> Board::GetMoves() {
 
   //Now we need to remove illegal moves.
   std::vector<Move> legal_moves;
-  std::cout << "number of pseudolegal moves: " << moves.size() << std::endl;
   for (Move move : moves) {
     Make(move);
     if (!(piece_bitboards[turn^0x1][kKing] & PlayerBitBoardControl(turn))) {
-      legal_moves.emplace_back(move);
+      if (GetPieceType(pieces[GetMoveDestination(move)]) == kPawn
+          && (GetSquareY(GetMoveDestination(move)) - 7*turn) == 0) {
+        Square source = GetMoveSource(move);
+        Square destination = GetMoveDestination(move);
+        for (MoveType move_type = kQueenPromotion; move_type <= kKnightPromotion; move_type++) {
+          legal_moves.emplace_back(GetMove(source, destination, move_type));
+        }
+      }
+      else {
+        legal_moves.emplace_back(move);
+      }
     }
     UnMake();
   }

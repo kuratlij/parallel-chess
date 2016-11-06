@@ -12,7 +12,7 @@
 #include "debug.h"
 
 //A bitboard is a 64bit boolean feature representation of the board.
-typedef int64_t BitBoard;
+typedef u_int64_t BitBoard;
 //A square is defined by its index
 typedef int32_t Square;
 //A move references a source, a destination square and a move type, but no piece.

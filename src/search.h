@@ -12,11 +12,12 @@
 #ifndef SEARCH_H_
 #define SEARCH_H_
 
+#include <random>
 #include "board.h"
 
 namespace search {
 
-
+Move GetRandomMove(Board board);
 
 }
 
