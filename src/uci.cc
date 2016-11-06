@@ -99,21 +99,17 @@ void Loop() {
       }
     }
     else if (Equals(command, "go")) {
-      Move move = search::GetRandomMove(board);
+      Move move = search::DepthSearch(board, 5);
       board.Make(move);
       std::cout << "bestmove " << parse::MoveToString(move) << std::endl;
     }
     else if (Equals(command, "perft")) {
       Depth depth = atoi(tokens[index++].c_str());
-      std::cout << search::perft(board, depth);
-    }
-    else if (Equals(command, "subperft")) {
-      Depth depth = atoi(tokens[index++].c_str());
       std::vector<Move> moves = board.GetMoves();
       long sum = 0;
       for (Move move : moves) {
         board.Make(move);
-        long perft_result = search::perft(board, depth-1);
+        long perft_result = search::Perft(board, depth-1);
         board.UnMake();
         std::cout << parse::MoveToString(move) << " depth: " << (depth-1)
             << " perft: " << perft_result << std::endl;

@@ -37,6 +37,7 @@ public:
   Color get_turn();
   //Print unicode chess board.
   void Print();
+  bool InCheck();
 private:
   void SwapTurn();
   void AddPiece(Square square, Piece piece);

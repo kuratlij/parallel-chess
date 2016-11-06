@@ -14,12 +14,14 @@
 
 #include <random>
 #include "board.h"
+#include "evaluation.h"
 
 namespace search {
 
 Move GetRandomMove(Board board);
 
-long perft(Board board, Depth depth);
+long Perft(Board board, Depth depth);
+Move DepthSearch(Board board, Depth depth);
 
 }
 

@@ -22,6 +22,7 @@ namespace uci{
 
 //Runs the UCI protocol until the client exits
 void Loop();
+void Info(std::string message);
 
 }
 

@@ -456,3 +456,7 @@ Color Board::get_turn() {
   return turn;
 }
 
+bool Board::InCheck() {
+  return (PlayerBitBoardControl(turn^0x1L) & piece_bitboards[turn][kKing]);
+}
+
