@@ -9,6 +9,7 @@
 #define GENERAL_PARSE_H_
 
 #include <string>
+#include "debug.h"
 #include "types.h"
 
 /**
@@ -46,6 +47,10 @@ Square StringToSquare(std::string square_name);
 //Retrieves the name of a square from its index representation
 std::string SquareToString(Square square);
 BitBoard StringToBitBoard(std::string square_name);
+std::string MoveToString(Move move);
+//StringToMove only translates a move string to move format but cannot
+//recognize MoveTypes aside from promotions.
+Move StringToMove(std::string move);
 
 void PrintBitboard(const BitBoard bitboard);
 

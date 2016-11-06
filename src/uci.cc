@@ -57,11 +57,41 @@ void Loop() {
     else if (Equals(command, "isready")) {
       Reply(kEngineIsReady);
     }
+    else if (Equals(command, "print")) {
+      board.Print();
+    }
     else if (Equals(command, "uci")) {
       Reply(kEngineNamePrefix + settings::engine_name + " "
           + settings::engine_version);
       Reply(kEngineAuthorPrefix + settings::engine_author);
       Reply(kOk);
+    }
+    else if (Equals(command, "position")) {
+      if (index < tokens.size()) {
+        std::string arg = tokens[index++];
+        if (Equals(arg, "startpos")) {
+          board.SetStartBoard();
+          if (index < tokens.size()) {
+            arg = tokens[index++];
+          }
+        }
+        if (Equals(arg, "moves")) {
+          while (index < tokens.size()) {
+            Move move = parse::StringToMove(tokens[index++]);
+            std::vector<Move> moves = board.GetMoves();
+            for (unsigned int i = 0; i < moves.size(); i++) {
+              if (GetMoveSource(moves[i]) == GetMoveSource(move)
+                  && GetMoveDestination(moves[i]) == GetMoveDestination(move)
+                  && (GetMoveType(moves[i]) < kQueenPromotion
+                      || GetMoveType(moves[i]) == GetMoveType(move))) {
+                std::cout << parse::MoveToString(moves[i]) << std::endl;
+                board.Make(moves[i]);
+                break;
+              }
+            }
+          }
+        }
+      }
     }
     else {
       Reply("Received unknown command: " + command);

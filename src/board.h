@@ -31,8 +31,8 @@ public:
   std::vector<Move> GetMoves();
   void Make(Move move);
   void UnMake();
-
-  //This needs to be public in order for the evaluation function.
+  void SetStartBoard();
+  //This needs to be public for the evaluation function.
   PieceBitboardSet get_piece_bitboards();
 
   //Print unicode chess board.

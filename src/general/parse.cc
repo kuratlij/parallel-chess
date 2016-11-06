@@ -7,6 +7,12 @@
 
 #include "parse.h"
 
+namespace {
+
+const std::string piece_abreviations[4] = {"q", "r", "b", "n"};
+
+}
+
 namespace parse {
 
 void PrintStandardRow(std::string first_delim, std::string mid_delim, std::string last_delim) {
@@ -59,6 +65,32 @@ std::string SquareToString(Square square) {
 
 BitBoard StringToBitBoard(std::string square_name) {
   return GetSquareBitBoard(StringToSquare(square_name));
+}
+
+std::string MoveToString(Move move) {
+  if (GetMoveType(move) >= kQueenPromotion) {
+    return SquareToString(GetMoveSource(move))
+        + SquareToString(GetMoveDestination(move))
+        + piece_abreviations[GetMoveType(move)-kQueenPromotion];
+  }
+  return SquareToString(GetMoveSource(move))
+      + SquareToString(GetMoveDestination(move));
+}
+
+Move StringToMove(std::string move) {
+  Square source = (move[0] - 'a') + (move[1] - '1') * 8;
+  Square destination = (move[2] - 'a') + (move[3] - '1') * 8;
+  if (move.size() == 4) {
+    return GetMove(source, destination);
+  }
+  for (int i = 0; i < 4; i++) {
+    if (piece_abreviations[i][0] == move[4]) {
+      return GetMove(source, destination, kQueenPromotion + i);
+    }
+  }
+  debug::Error("illegal promotion piece string! Parsed move length: "
+      + std::to_string(move.size()) +" Parsed move: " + move);
+  return 0;
 }
 
 }

@@ -85,6 +85,34 @@ Board::Board() {
   debug::Print("constructed board", debug::kDebugBoard);
 }
 
+void Board::SetStartBoard() {
+  for (int player = kWhite; player <= kBlack; player++) {
+    for (int piece_type = 0; piece_type < kNumPieceTypes; piece_type++) {
+      piece_bitboards[player][piece_type] = 0;
+    }
+  }
+  for (Square square = parse::StringToSquare("a1");
+      square <= parse::StringToSquare("h8"); square++) {
+    pieces[square] = kNoPiece;
+  }
+  for (Color color = kWhite; color <= kBlack; color++) {
+    AddPiece(parse::StringToSquare("a1") + (56*color), GetPiece(color, kRook));
+    AddPiece(parse::StringToSquare("b1") + (56*color), GetPiece(color, kKnight));
+    AddPiece(parse::StringToSquare("c1") + (56*color), GetPiece(color, kBishop));
+    AddPiece(parse::StringToSquare("d1") + (56*color), GetPiece(color, kQueen));
+    AddPiece(parse::StringToSquare("e1") + (56*color), GetPiece(color, kKing));
+    AddPiece(parse::StringToSquare("f1") + (56*color), GetPiece(color, kBishop));
+    AddPiece(parse::StringToSquare("g1") + (56*color), GetPiece(color, kKnight));
+    AddPiece(parse::StringToSquare("h1") + (56*color), GetPiece(color, kRook));
+    for (int i = 0; i < 8; i++) {
+      AddPiece(parse::StringToSquare("a2") + i + (40*color), GetPiece(color, kPawn));
+    }
+  }
+  castling_rights = 15;
+  turn = kWhite;
+  debug::Print("set starting position", debug::kDebugBoard);
+}
+
 void Board::AddPiece(Square square, Piece piece) {
   piece_bitboards[GetPieceColor(piece)][GetPieceType(piece)] |= GetSquareBitBoard(square);
   pieces[square] = piece;

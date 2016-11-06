@@ -29,7 +29,7 @@ void Print(const std::string message, const bool condition = true,
     const std::string tag = "");
 
 
-void Error(const std::string message, bool exit=false);
+void Error(const std::string message, bool exit=true);
 
 }
 
