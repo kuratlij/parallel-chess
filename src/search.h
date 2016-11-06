@@ -19,6 +19,8 @@ namespace search {
 
 Move GetRandomMove(Board board);
 
+long perft(Board board, Depth depth);
+
 }
 
 #endif /* SEARCH_H_ */

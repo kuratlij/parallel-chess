@@ -29,6 +29,7 @@ typedef int32_t Piece;
 //A score is a value assigned to a position which represents how good the position
 //for the player to move.
 typedef int32_t Score;
+typedef int32_t Depth;
 
 const Color kWhite = 0;
 const Color kBlack = 1;

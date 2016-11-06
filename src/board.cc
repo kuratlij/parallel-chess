@@ -254,7 +254,7 @@ BitBoard Board::PlayerBitBoardControl(Color color) {
   BitBoard se_diag = bitops::FillSouthEast(diag, empty);
   se_diag |= bitops::SE(se_diag);
   BitBoard sw_diag = bitops::FillSouthWest(diag, empty);
-  sw_diag |= bitops::NW(sw_diag);
+  sw_diag |= bitops::SW(sw_diag);
   under_control |= ne_diag | nw_diag | se_diag | sw_diag;
 
   BitBoard vec = piece_bitboards[color][kQueen] | piece_bitboards[color][kRook];
