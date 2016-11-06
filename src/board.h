@@ -34,7 +34,7 @@ public:
   void SetStartBoard();
   //This needs to be public for the evaluation function.
   PieceBitboardSet get_piece_bitboards();
-
+  Color get_turn();
   //Print unicode chess board.
   void Print();
 private:

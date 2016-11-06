@@ -441,3 +441,18 @@ std::vector<Move> Board::GetMoves() {
   }
   return legal_moves;
 }
+
+PieceBitboardSet Board::get_piece_bitboards() {
+  PieceBitboardSet bitboards;
+  for (Color color = kWhite; color <= kBlack; color++) {
+    for (PieceType piece_type = kKing; piece_type < kNumPieceTypes; piece_type++) {
+      bitboards.piece_bitboards[color][piece_type] = piece_bitboards[color][piece_type];
+    }
+  }
+  return bitboards;
+}
+
+Color Board::get_turn() {
+  return turn;
+}
+

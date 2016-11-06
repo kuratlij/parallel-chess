@@ -12,9 +12,12 @@
 #ifndef EVALUATION_H_
 #define EVALUATION_H_
 
+#include "general_headers.h"
+#include "board.h"
+
 namespace evaluation {
 
-
+Score ScoreBoard(Board board);
 
 }
 
