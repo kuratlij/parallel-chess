@@ -6,6 +6,10 @@
  */
 
 #include "search.h"
+#include <iostream>
+#include <fstream>
+#include <ctime>
+#include "omp.h"
 
 namespace {
 
@@ -71,12 +75,75 @@ Score AlphaBeta(Board board, Score alpha, Score beta, Depth depth) {
 }
 
 Move DepthSearch(Board board, Depth depth) {
-  for (Depth current_depth = 1; current_depth <= depth; current_depth++) {
-    Score score = AlphaBeta(board, kMinScore, kMaxScore, current_depth);
-    std::cout << "info " << "cp " << score << " pv "
-        << parse::MoveToString(best_move) << std::endl;
-  }
-  return best_move;
+  Move bestmoveSeq = SequentialSearch(board, depth);
+  Move bestmove = ParallelSearch(board, depth);
+  return bestmove;
 }
+
+    Move SequentialSearch(Board board, Depth depth){
+      // Measure complete search time
+      clock_t complete_begin = clock();
+
+      for (Depth current_depth = 1; current_depth <= depth; current_depth++) {
+        std::cout << std::endl << "depth: " << current_depth << std::endl;
+        // Measure search time
+        clock_t begin = clock();
+
+        Score score = AlphaBeta(board, kMinScore, kMaxScore, current_depth);
+
+        clock_t end = clock();
+        double elapsed_secs = double(end-begin) / CLOCKS_PER_SEC;
+
+        //    std::fstream file;
+        //    file.open("/home/jonas/parallel-log.txt");
+        //    file << "Move: " << parse::MoveToString(best_move) << std::endl;
+        //    file.close();
+        std::cout << "info " << "cp " << score << " pv "
+                  << parse::MoveToString(best_move) << std::endl;
+        std::cout << "Elapsed time (depth " << current_depth << "): " << elapsed_secs << std::endl;
+      }
+
+      // Print elapsed search time
+      clock_t complete_end = clock();
+      double elapsed_secs = double(complete_end-complete_begin) / CLOCKS_PER_SEC;
+      std::cout << "SEQUENTIAL Elapsed time total: " << elapsed_secs << std::endl;
+
+      return best_move;
+    }
+
+    Move ParallelSearch(Board board, Depth depth){
+      // Measure complete search time
+      clock_t complete_begin = clock();
+
+      omp_set_num_threads(depth);
+      #pragma omp parallel
+      //  for (Depth current_depth = 1; current_depth <= depth; current_depth++) {
+      {
+        Depth current_depth = int32_t(omp_get_thread_num()) + 1;
+        std::cout << std::endl << "depth: " << current_depth << std::endl;
+        // Measure search time
+        clock_t begin = clock();
+
+        Score score = AlphaBeta(board, kMinScore, kMaxScore, current_depth);
+
+        clock_t end = clock();
+        double elapsed_secs = double(end-begin) / CLOCKS_PER_SEC;
+
+        //    std::fstream file;
+        //    file.open("/home/jonas/parallel-log.txt");
+        //    file << "Move: " << parse::MoveToString(best_move) << std::endl;
+        //    file.close();
+        std::cout << "info " << "cp " << score << " pv "
+                  << parse::MoveToString(best_move) << std::endl;
+        std::cout << "Elapsed time (depth " << current_depth << "): " << elapsed_secs << std::endl;
+      }
+
+      // Print elapsed search time
+      clock_t complete_end = clock();
+      double elapsed_secs = double(complete_end-complete_begin) / CLOCKS_PER_SEC;
+      std::cout << "PARALLEL Elapsed time total: " << elapsed_secs << std::endl;
+
+      return best_move;
+    }
 
 }

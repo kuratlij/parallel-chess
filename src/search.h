@@ -22,6 +22,8 @@ Move GetRandomMove(Board board);
 
 long Perft(Board board, Depth depth);
 Move DepthSearch(Board board, Depth depth);
+Move SequentialSearch(Board board, Depth depth);
+Move ParallelSearch(Board board, Depth depth);
 
 }
 

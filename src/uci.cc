@@ -99,7 +99,7 @@ void Loop() {
       }
     }
     else if (Equals(command, "go")) {
-      Move move = search::DepthSearch(board, 5);
+      Move move = search::DepthSearch(board, 7);
       board.Make(move);
       std::cout << "bestmove " << parse::MoveToString(move) << std::endl;
     }
