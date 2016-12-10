@@ -50,7 +50,7 @@ private:
   //Includes information necessary to restore a previous state.
   std::vector<MoveHistoryInformation> move_history_information;
   //4 bits are set representing white and black, queen- and kingside castling
-  int32_t castling_rights;
+  CastlingRights castling_rights;
   Square en_passant;
   Color turn;
 };
