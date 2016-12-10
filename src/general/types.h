@@ -31,6 +31,7 @@ typedef int32_t Piece;
 typedef int32_t Score;
 typedef int32_t Depth;
 typedef int32_t CastlingRights;
+typedef uint64_t HashType;
 
 const Color kWhite = 0;
 const Color kBlack = 1;

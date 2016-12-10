@@ -103,6 +103,7 @@ void PrintStandardRow(std::string first_delim, std::string mid_delim, std::strin
 }
 
 Board::Board() {
+  hash = 0;
   for (int player = kWhite; player <= kBlack; player++) {
     for (int piece_type = 0; piece_type < kNumPieceTypes; piece_type++) {
       piece_bitboards[player][piece_type] = 0;
@@ -131,6 +132,7 @@ Board::Board() {
 }
 
 void Board::SetStartBoard() {
+  hash = 0;
   for (int player = kWhite; player <= kBlack; player++) {
     for (int piece_type = 0; piece_type < kNumPieceTypes; piece_type++) {
       piece_bitboards[player][piece_type] = 0;
@@ -161,12 +163,14 @@ void Board::SetStartBoard() {
 void Board::AddPiece(Square square, Piece piece) {
   piece_bitboards[GetPieceColor(piece)][GetPieceType(piece)] |= GetSquareBitBoard(square);
   pieces[square] = piece;
+  hash ^= hash::get_piece(piece, square);
 }
 
 Piece Board::RemovePiece(Square square) {
   Piece piece = pieces[square];
   pieces[square] = kNoPiece;
   piece_bitboards[GetPieceColor(piece)][GetPieceType(piece)] ^= GetSquareBitBoard(square);
+  hash ^= hash::get_piece(piece, square);
   return piece;
 }
 
@@ -182,6 +186,7 @@ Piece Board::MovePiece(Square source, Square destination) {
 
 void Board::SwapTurn() {
   turn ^= 0x1;
+  hash ^= hash::get_color_hash();
 }
 
 void Board::Make(Move move) {
@@ -505,6 +510,11 @@ std::vector<Move> Board::GetMoves() {
   }
   return legal_moves;
 }
+
+HashType Board::get_hash() {
+  return hash;
+}
+
 
 PieceBitboardSet Board::get_piece_bitboards() {
   PieceBitboardSet bitboards;

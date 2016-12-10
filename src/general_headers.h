@@ -16,6 +16,7 @@
 #include "general/parse.h"
 #include "general/bit_operations.h"
 #include "general/settings.h"
+#include "general/hash.h"
 
 
 #endif /* GENERAL_HEADERS_H_ */

@@ -32,6 +32,7 @@ public:
   void Make(Move move);
   void UnMake();
   void SetStartBoard();
+  HashType get_hash();
   //This needs to be public for the evaluation function.
   PieceBitboardSet get_piece_bitboards();
   Color get_turn();
@@ -53,6 +54,7 @@ private:
   CastlingRights castling_rights;
   Square en_passant;
   Color turn;
+  HashType hash;
 };
 
 #endif /* BOARD_H_ */
