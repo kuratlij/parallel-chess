@@ -17,6 +17,7 @@
 #include "general/bit_operations.h"
 #include "general/settings.h"
 #include "general/hash.h"
+#include "general/spin_lock.cc"
 
 
 #endif /* GENERAL_HEADERS_H_ */

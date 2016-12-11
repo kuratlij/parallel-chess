@@ -63,7 +63,7 @@ Score AlphaBeta(Board board, Score alpha, Score beta, Depth depth) {
     return 0;
   }
   table::Entry entry = table::GetEntry(board.get_hash());
-  if (entry.hash == board.get_hash()) {
+  if (table::ValidateHash(entry,board.get_hash())) {
     std::sort(moves.begin(), moves.end(), Sorter(entry.best_move));
   }
   Move best_local_move = moves[0];
