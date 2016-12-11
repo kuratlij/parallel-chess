@@ -30,6 +30,8 @@ typedef int32_t Piece;
 //for the player to move.
 typedef int32_t Score;
 typedef int32_t Depth;
+typedef int32_t CastlingRights;
+typedef uint64_t HashType;
 
 const Color kWhite = 0;
 const Color kBlack = 1;
@@ -58,6 +60,10 @@ const MoveType kRookPromotion = 6;
 const MoveType kBishopPromotion = 7;
 const MoveType kKnightPromotion = 8;
 
+const CastlingRights kWSCastle = 1;
+const CastlingRights kWLCastle = kWSCastle << 1;
+const CastlingRights kBSCastle = kWSCastle << 2;
+const CastlingRights kBLCastle = kWSCastle << 3;
 
 /**
  * In the following we define data extraction and translation functions,

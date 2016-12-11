@@ -16,7 +16,52 @@ const BitBoard fourth_row = parse::StringToBitBoard("a4") | parse::StringToBitBo
 
 const BitBoard fifth_row = fourth_row << 8;
 
+const BitBoard castling_relevant_bbs[] = {
+    parse::StringToBitBoard("h1") | parse::StringToBitBoard("e1"),
+    parse::StringToBitBoard("a1") | parse::StringToBitBoard("e1"),
+    parse::StringToBitBoard("h8") | parse::StringToBitBoard("e8"),
+    parse::StringToBitBoard("a8") | parse::StringToBitBoard("e8")
+};
+const BitBoard castling_check_bbs[] = {
+    parse::StringToBitBoard("e1") | parse::StringToBitBoard("f1") | parse::StringToBitBoard("g1"),
+    parse::StringToBitBoard("c1") | parse::StringToBitBoard("d1") | parse::StringToBitBoard("e1"),
+    parse::StringToBitBoard("e8") | parse::StringToBitBoard("f8") | parse::StringToBitBoard("g8"),
+    parse::StringToBitBoard("c8") | parse::StringToBitBoard("d8") | parse::StringToBitBoard("e8")
+};
+const BitBoard castling_empty_bbs[] = {
+    parse::StringToBitBoard("f1") | parse::StringToBitBoard("g1"),
+    parse::StringToBitBoard("b1") | parse::StringToBitBoard("c1") | parse::StringToBitBoard("d1"),
+    parse::StringToBitBoard("f8") | parse::StringToBitBoard("g8"),
+    parse::StringToBitBoard("b8") | parse::StringToBitBoard("c8") | parse::StringToBitBoard("d8")
+};
+
+const BitBoard all_castling_squares = parse::StringToBitBoard("h1") | parse::StringToBitBoard("e1")
+                                    | parse::StringToBitBoard("a1") | parse::StringToBitBoard("e1")
+                                    | parse::StringToBitBoard("h8") | parse::StringToBitBoard("e8")
+                                    | parse::StringToBitBoard("a8") | parse::StringToBitBoard("e8");
+
+//Define helper functions for move history information
+void SaveEnPassant(MoveHistoryInformation &info, Square ep) {
+  info |= (ep << 4);
 }
+Square GetEnPassant(const MoveHistoryInformation info) {
+  return (info >> 4) & 0x3F;
+}
+void SaveMovingPiece(MoveHistoryInformation &info, Piece piece) {
+  info |= piece;
+}
+Piece GetMovingPiece(const MoveHistoryInformation info) {
+  return info & 0xF;
+}
+void SaveCastlingRignts(MoveHistoryInformation &info, CastlingRights rights) {
+  info |= rights << 10;
+}
+CastlingRights GetCastlingRights(const MoveHistoryInformation info) {
+  return info >> 10 & 0xF;
+}
+
+}
+
 
 namespace {
 
@@ -58,6 +103,7 @@ void PrintStandardRow(std::string first_delim, std::string mid_delim, std::strin
 }
 
 Board::Board() {
+  hash = 0;
   for (int player = kWhite; player <= kBlack; player++) {
     for (int piece_type = 0; piece_type < kNumPieceTypes; piece_type++) {
       piece_bitboards[player][piece_type] = 0;
@@ -86,6 +132,7 @@ Board::Board() {
 }
 
 void Board::SetStartBoard() {
+  hash = 0;
   for (int player = kWhite; player <= kBlack; player++) {
     for (int piece_type = 0; piece_type < kNumPieceTypes; piece_type++) {
       piece_bitboards[player][piece_type] = 0;
@@ -116,12 +163,14 @@ void Board::SetStartBoard() {
 void Board::AddPiece(Square square, Piece piece) {
   piece_bitboards[GetPieceColor(piece)][GetPieceType(piece)] |= GetSquareBitBoard(square);
   pieces[square] = piece;
+  hash ^= hash::get_piece(piece, square);
 }
 
 Piece Board::RemovePiece(Square square) {
   Piece piece = pieces[square];
   pieces[square] = kNoPiece;
   piece_bitboards[GetPieceColor(piece)][GetPieceType(piece)] ^= GetSquareBitBoard(square);
+  hash ^= hash::get_piece(piece, square);
   return piece;
 }
 
@@ -137,13 +186,15 @@ Piece Board::MovePiece(Square source, Square destination) {
 
 void Board::SwapTurn() {
   turn ^= 0x1;
+  hash ^= hash::get_color_hash();
 }
 
 void Board::Make(Move move) {
   MoveHistoryInformation information = 0;
-  information |= RemovePiece(GetMoveDestination(move));
+  SaveMovingPiece(information, RemovePiece(GetMoveDestination(move)));
   MovePiece(GetMoveSource(move),GetMoveDestination(move));
-  information |= (en_passant << 4);
+  SaveEnPassant(information, en_passant);
+  SaveCastlingRignts(information, castling_rights);
   //We default our ep square to a place the opponent will never be able to ep.
   en_passant = 56 - (56 * turn);
   switch (GetMoveType(move)) {
@@ -170,6 +221,15 @@ void Board::Make(Move move) {
     }
     break;
   }
+  BitBoard srcdes = GetSquareBitBoard(GetMoveSource(move))
+      | GetSquareBitBoard(GetMoveDestination(move));
+  if (srcdes & all_castling_squares) {
+    for (int right = 0; right < 4; right++) {
+      if (castling_relevant_bbs[right] & srcdes) {
+        castling_rights &= ~(0x1 << right);
+      }
+    }
+  }
   move_history_information.emplace_back(information);
   move_history.emplace_back(move);
   SwapTurn();
@@ -182,8 +242,9 @@ void Board::UnMake() {
   MoveHistoryInformation info = move_history_information.back();
   move_history_information.pop_back();
   AddPiece(GetMoveSource(move), RemovePiece(GetMoveDestination(move)));
-  AddPiece(GetMoveDestination(move), info & 0xF);
-  en_passant = info >> 4;
+  AddPiece(GetMoveDestination(move), GetMovingPiece(info));
+  en_passant = GetEnPassant(info);
+  castling_rights = GetCastlingRights(info);
   switch(GetMoveType(move)) {
   case kEnPassant:
     RemovePiece(GetMoveDestination(move) - 8 + (2*8) * turn);
@@ -298,6 +359,16 @@ std::vector<Move> Board::GetMoves() {
   king |= bitops::N(king) | bitops::S(king);
   king &= ~own_pieces;
   AddMoves(moves, piece_bitboards[turn][kKing], king, enemy_pieces);
+  BitBoard in_check = PlayerBitBoardControl(turn^0x1);
+  for (int right = 0 + 2*turn; right < 4-2*turn; right++) {
+    if ((castling_rights & (0x1 << right))
+        && !(castling_check_bbs[right] & in_check)
+        && !(castling_empty_bbs[right] & (own_pieces | enemy_pieces))) {
+      Square source = bitops::NumberOfTrailingZeros(piece_bitboards[turn][kKing]);
+      Square destination = source + 2 - (right%2)*4;
+      moves.emplace_back(GetMove(source, destination, kCastle));
+    }
+  }
 
   //Vertical/Horizontal Sliders
   BitBoard vertical_movers = piece_bitboards[turn][kQueen]
@@ -416,8 +487,6 @@ std::vector<Move> Board::GetMoves() {
       moves.emplace_back(GetMove(destination+9, destination, kCapture));
       bitops::PopLSB(nw_captures);
     }
-
-
   }
 
   //Now we need to remove illegal moves.
@@ -441,6 +510,11 @@ std::vector<Move> Board::GetMoves() {
   }
   return legal_moves;
 }
+
+HashType Board::get_hash() {
+  return hash;
+}
+
 
 PieceBitboardSet Board::get_piece_bitboards() {
   PieceBitboardSet bitboards;

@@ -12,7 +12,7 @@
 #include "uci.h"
 
 int main() {
-  //std::cout << parse::MoveToString(parse::StringToMove("a2a4")) << std::endl;
+  hash::initialize();
   uci::Loop();
   debug::Print("Exiting Program", debug::kDebugMain);
   return 0;
