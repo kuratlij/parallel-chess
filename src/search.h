@@ -13,8 +13,10 @@
 #define SEARCH_H_
 
 #include <random>
+#include <algorithm>
 #include "board.h"
 #include "evaluation.h"
+#include "transposition.h"
 
 namespace search {
 

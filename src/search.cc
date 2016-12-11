@@ -12,6 +12,12 @@
 #include "omp.h"
 
 namespace {
+struct Sorter {
+  Sorter(Move move) { this->best_move = move; }
+  bool operator() (Move i, Move j) { return i == this->best_move; }
+
+  Move best_move;
+};
 
 std::mt19937_64 rng;
 Move best_move = 0;
@@ -56,6 +62,10 @@ Score AlphaBeta(Board board, Score alpha, Score beta, Depth depth) {
     }
     return 0;
   }
+  table::Entry entry = table::GetEntry(board.get_hash());
+  if (entry.hash == board.get_hash()) {
+    std::sort(moves.begin(), moves.end(), Sorter(entry.best_move));
+  }
   Move best_local_move = moves[0];
   for (Move move : moves) {
     board.Make(move);
@@ -63,6 +73,7 @@ Score AlphaBeta(Board board, Score alpha, Score beta, Depth depth) {
     board.UnMake();
     if (score >= beta) {
       best_move = move;
+      table::SaveEntry(board.get_hash(), move, score);
       return score;
     }
     if (score > alpha) {
