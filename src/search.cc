@@ -14,7 +14,10 @@
 namespace {
 struct Sorter {
   Sorter(Move move) { this->best_move = move; }
-  bool operator() (Move i, Move j) { return i == this->best_move; }
+  bool operator() (Move i, Move j) {
+    return (i == this->best_move) || (j!=best_move && GetMoveType(i) >= kCapture
+        && GetMoveType(j) < kCapture);
+  }
 
   Move best_move;
 };
