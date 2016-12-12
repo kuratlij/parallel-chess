@@ -123,7 +123,7 @@ long Perft(Board board, Depth depth) {
                 parallelBoard[omp_get_thread_num()].UnMake();
                 if (score >= beta) {
                     best_move = move;
-                    table::SaveEntry(board.get_hash(), move, score);
+                    table::SaveEntry(parallelBoard[omp_get_thread_num()].get_hash(), move, score);
                     go=false;
                     #pragma omp flush(go)
                     end_score = score;
@@ -138,7 +138,13 @@ long Perft(Board board, Depth depth) {
         if(!go){
             return end_score;
         }
-        best_move = best_local_move[0];
+        for(int i = 0; i<settings::num_threads;i++){
+            if(parallelAlpha[i]>alpha){
+                best_move = best_local_move[i];
+                alpha=parallelAlpha[i];
+            }
+        }
+
         return alpha;
     }
 
@@ -147,7 +153,7 @@ long Perft(Board board, Depth depth) {
 
 
 Move DepthSearch(Board board, Depth depth) {
-  Move bestmoveSeq = SequentialSearch(board, depth);
+  //Move bestmoveSeq = SequentialSearch(board, depth);
   Move bestmove = ParallelSearch(board, depth);
   return bestmove;
 }
@@ -187,16 +193,13 @@ Move DepthSearch(Board board, Depth depth) {
       // Measure complete search time
       clock_t complete_begin = clock();
 
-      omp_set_num_threads(depth);
-      #pragma omp parallel
-      //  for (Depth current_depth = 1; current_depth <= depth; current_depth++) {
-      {
-        Depth current_depth = int32_t(omp_get_thread_num()) + 1;
+      for (Depth current_depth = 1; current_depth <= depth; current_depth++) {
+
         std::cout << std::endl << "depth: " << current_depth << std::endl;
         // Measure search time
         clock_t begin = clock();
 
-        Score score = AlphaBeta(board, kMinScore, kMaxScore, current_depth);
+        Score score = ParallelAlphaBeta(board, kMinScore, kMaxScore, current_depth);
 
         clock_t end = clock();
         double elapsed_secs = double(end-begin) / CLOCKS_PER_SEC;

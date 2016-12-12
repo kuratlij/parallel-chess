@@ -15,7 +15,7 @@ namespace settings {
 const std::string engine_name = "DPHPC Engine";
 const std::string engine_version = "Alpha 0.1";
 const std::string engine_author = "Jonas Kuratli, Jonathan Maurer and Jonathan Rosenthal";
-const int num_threads = 2;
+const int num_threads = 4;
 
 }
 
