@@ -162,7 +162,7 @@ void Board::SetStartBoard() {
   debug::Print("set starting position", debug::kDebugBoard);
 }
 
-void Board::SetToSamePosition(Board board) {
+void Board::SetToSamePosition(Board &board) {
   hash = board.hash;
   en_passant = board.en_passant;
   for (int player = kWhite; player <= kBlack; player++) {
@@ -552,8 +552,9 @@ bool Board::InCheck() {
   return (PlayerBitBoardControl(turn^0x1L) & piece_bitboards[turn][kKing]);
 }
 
-Board copy() {
-  Board result = Board();
+Board Board::copy() {
+  Board result;
+  result.SetToSamePosition((*this));
   return result;
 }
 
