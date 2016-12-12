@@ -39,6 +39,7 @@ public:
   //Print unicode chess board.
   void Print();
   bool InCheck();
+  Board copy();
 private:
   void SwapTurn();
   void AddPiece(Square square, Piece piece);

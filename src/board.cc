@@ -534,3 +534,8 @@ bool Board::InCheck() {
   return (PlayerBitBoardControl(turn^0x1L) & piece_bitboards[turn][kKing]);
 }
 
+Board copy() {
+  Board result = Board();
+  return result;
+}
+

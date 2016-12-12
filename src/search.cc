@@ -109,7 +109,7 @@ long Perft(Board board, Depth depth) {
         for(int i = 0; i<settings::num_threads;i++){
             best_local_move[i] = moves[0];
             parallelBoard[i] = board;//Todo make copy, don't reference
-            parallelAlpha[i] = alpha;//Todo make copy, don't reference
+            parallelAlpha[i] = alpha;//Todo not reference, since Score is int?
         }
         omp_set_num_threads(settings::num_threads);
         bool go = true;
@@ -119,7 +119,7 @@ long Perft(Board board, Depth depth) {
             if(go){
                 Move move = moves[i];
                 parallelBoard[omp_get_thread_num()].Make(move);
-                Score score = -AlphaBeta(board, -beta, -parallelAlpha[omp_get_thread_num()], depth - 1);
+                Score score = -AlphaBeta(parallelBoard[omp_get_thread_num()], -beta, -parallelAlpha[omp_get_thread_num()], depth - 1);
                 parallelBoard[omp_get_thread_num()].UnMake();
                 if (score >= beta) {
                     best_move = move;
@@ -127,6 +127,7 @@ long Perft(Board board, Depth depth) {
                     go=false;
                     #pragma omp flush(go)
                     end_score = score;
+                    #pragma omp flush(end_score)
                 }
                 if (score > parallelAlpha[omp_get_thread_num()]) {
                     parallelAlpha[omp_get_thread_num()] = score;
