@@ -104,6 +104,7 @@ void PrintStandardRow(std::string first_delim, std::string mid_delim, std::strin
 
 Board::Board() {
   hash = 0;
+  en_passant = 0;
   for (int player = kWhite; player <= kBlack; player++) {
     for (int piece_type = 0; piece_type < kNumPieceTypes; piece_type++) {
       piece_bitboards[player][piece_type] = 0;
@@ -133,6 +134,7 @@ Board::Board() {
 
 void Board::SetStartBoard() {
   hash = 0;
+  en_passant = 0;
   for (int player = kWhite; player <= kBlack; player++) {
     for (int piece_type = 0; piece_type < kNumPieceTypes; piece_type++) {
       piece_bitboards[player][piece_type] = 0;
@@ -158,6 +160,22 @@ void Board::SetStartBoard() {
   castling_rights = 15;
   turn = kWhite;
   debug::Print("set starting position", debug::kDebugBoard);
+}
+
+void Board::SetToSamePosition(Board board) {
+  hash = board.hash;
+  en_passant = board.en_passant;
+  for (int player = kWhite; player <= kBlack; player++) {
+    for (int piece_type = 0; piece_type < kNumPieceTypes; piece_type++) {
+      piece_bitboards[player][piece_type] = board.piece_bitboards[player][piece_type];
+    }
+  }
+  for (Square square = parse::StringToSquare("a1");
+      square <= parse::StringToSquare("h8"); square++) {
+    pieces[square] = board.pieces[square];
+  }
+  castling_rights = board.castling_rights;
+  turn = board.turn;
 }
 
 void Board::AddPiece(Square square, Piece piece) {
