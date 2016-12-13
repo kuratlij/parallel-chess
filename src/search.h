@@ -26,7 +26,9 @@ long Perft(Board board, Depth depth);
 Move DepthSearch(Board board, Depth depth);
 Move SequentialSearch(Board board, Depth depth);
 Move ParallelSearch(Board board, Depth depth);
-
+bool depthPattern(Depth depth);
+Score AlphaBeta(Board board, Score alpha, Score beta, Depth depth);
+Score ParallelAlphaBeta(Board board, Score alpha, Score beta, Depth depth);
 }
 
 #endif /* SEARCH_H_ */

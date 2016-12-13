@@ -71,8 +71,13 @@ long Perft(Board board, Depth depth) {
         }
         Move best_local_move = moves[0];
         for (Move move : moves) {
-            board.Make(move);
-            Score score = -AlphaBeta(board, -beta, -alpha, depth-1);
+            board.Make(move);Score score;
+            if(depthPattern(depth)){
+                score = -ParallelAlphaBeta(board, -beta, -alpha, depth - 1);
+            }
+            else{
+                score = -AlphaBeta(board, -beta, -alpha, depth - 1);
+            }
             board.UnMake();
             if (score >= beta) {
                 best_move = move;
@@ -119,10 +124,16 @@ long Perft(Board board, Depth depth) {
             if(go){
                 Move move = moves[i];
                 parallelBoard[omp_get_thread_num()].Make(move);
-                if(settings::alphaPropagation&& (alpha > parallelAlpha[omp_get_thread_num()])){
+                if(settings::alphaPropagation&& (alpha > parallelAlpha[omp_get_thread_num()])) {
                     parallelAlpha[omp_get_thread_num()] = alpha;
                 }
-                Score score = -AlphaBeta(parallelBoard[omp_get_thread_num()], -beta, -parallelAlpha[omp_get_thread_num()], depth - 1);
+                Score score;
+                if(depthPattern(depth)){
+                    score = -ParallelAlphaBeta(parallelBoard[omp_get_thread_num()], -beta, -parallelAlpha[omp_get_thread_num()], depth - 1);
+                }
+                else{
+                    score = -AlphaBeta(parallelBoard[omp_get_thread_num()], -beta, -parallelAlpha[omp_get_thread_num()], depth - 1);
+                }
                 parallelBoard[omp_get_thread_num()].UnMake();
                 if (score >= beta) {
                     best_move = move;
@@ -160,7 +171,7 @@ long Perft(Board board, Depth depth) {
 
 
 Move DepthSearch(Board board, Depth depth) {
-  //Move bestmoveSeq = SequentialSearch(board, depth);
+  //Move bestmoveSeq = SequentialSearch(board, depth);//never use this again, just set depthpattern to false
   Move bestmove = ParallelSearch(board, depth);
   return bestmove;
 }
@@ -198,18 +209,18 @@ Move DepthSearch(Board board, Depth depth) {
 
     Move ParallelSearch(Board board, Depth depth){
       // Measure complete search time
-      clock_t complete_begin = clock();
+      Time complete_begin = now();
 
       for (Depth current_depth = 1; current_depth <= depth; current_depth++) {
 
         std::cout << std::endl << "depth: " << current_depth << std::endl;
         // Measure search time
-        clock_t begin = clock();
+        Time begin = now();
 
-        Score score = ParallelAlphaBeta(board, kMinScore, kMaxScore, current_depth);
+        Score score = AlphaBeta(board, kMinScore, kMaxScore, current_depth);
 
-        clock_t end = clock();
-        double elapsed_secs = double(end-begin) / CLOCKS_PER_SEC;
+        Time end = now();
+        std::chrono::duration<double> elapsed_secs = std::chrono::duration_cast<std::chrono::duration<double> >(end-begin);
 
         //    std::fstream file;
         //    file.open("/home/jonas/parallel-log.txt");
@@ -217,15 +228,20 @@ Move DepthSearch(Board board, Depth depth) {
         //    file.close();
         std::cout << "info " << "cp " << score << " pv "
                   << parse::MoveToString(best_move) << std::endl;
-        std::cout << "Elapsed time (depth " << current_depth << "): " << elapsed_secs << std::endl;
+        std::cout << "Elapsed time (depth " << current_depth << "): " << elapsed_secs.count() << std::endl;
       }
 
       // Print elapsed search time
-      clock_t complete_end = clock();
-      double elapsed_secs = double(complete_end-complete_begin) / CLOCKS_PER_SEC;
-      std::cout << "PARALLEL Elapsed time total: " << elapsed_secs << std::endl;
+      Time complete_end = now();
+        std::chrono::duration<double> elapsed_secs = std::chrono::duration_cast<std::chrono::duration<double> >(complete_end-complete_begin);
+        std::cout << "PARALLEL Elapsed time total: " << elapsed_secs.count() << std::endl;
 
       return best_move;
+    }
+
+
+    bool depthPattern(Depth depth){//for sequential just return false
+        return false;
     }
 
 }
