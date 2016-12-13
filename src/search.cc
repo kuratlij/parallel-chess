@@ -117,6 +117,7 @@ long Perft(Board board, Depth depth) {
             parallelAlpha[i] = alpha;//Todo not reference, since Score is int?
         }
         omp_set_num_threads(settings::num_threads);
+        omp_set_nested(1);
         bool go = true;
         Score end_score;
 #pragma omp parallel for
@@ -242,7 +243,7 @@ Depth starting_depth;
 
 
     bool depthPattern(Depth depth){//for sequential just return false
-        return !(depth%4);//starting_depth
+        return !(depth%4);//depth==(starting_depth-1);//starting_depth
     }
 
 }
