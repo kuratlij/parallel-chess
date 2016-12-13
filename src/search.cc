@@ -119,6 +119,9 @@ long Perft(Board board, Depth depth) {
             if(go){
                 Move move = moves[i];
                 parallelBoard[omp_get_thread_num()].Make(move);
+                if(settings::alphaPropagation&& (alpha > parallelAlpha[omp_get_thread_num()])){
+                    parallelAlpha[omp_get_thread_num()] = alpha;
+                }
                 Score score = -AlphaBeta(parallelBoard[omp_get_thread_num()], -beta, -parallelAlpha[omp_get_thread_num()], depth - 1);
                 parallelBoard[omp_get_thread_num()].UnMake();
                 if (score >= beta) {
@@ -131,6 +134,10 @@ long Perft(Board board, Depth depth) {
                 }
                 if (score > parallelAlpha[omp_get_thread_num()]) {
                     parallelAlpha[omp_get_thread_num()] = score;
+                    if(settings::alphaPropagation&&((parallelAlpha[omp_get_thread_num()]-settings::alphaChange)>alpha)){//Todo what is relevant improvement to cut more(best so far 15)
+                        alpha = parallelAlpha[omp_get_thread_num()];
+                        #pragma omp flush(alpha)
+                    }
                     best_local_move[omp_get_thread_num()] = move;
                 }
             }
