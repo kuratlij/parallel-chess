@@ -113,7 +113,7 @@ long Perft(Board board, Depth depth) {
         std::vector<Score> parallelAlpha = std::vector<Score>(settings::num_threads);
         for(int i = 0; i<settings::num_threads;i++){
             best_local_move[i] = moves[0];
-            parallelBoard[i] = board;//Todo make copy, don't reference
+            parallelBoard[i] = board.copy();//Todo make copy, don't reference
             parallelAlpha[i] = alpha;//Todo not reference, since Score is int?
         }
         omp_set_num_threads(settings::num_threads);
@@ -139,7 +139,7 @@ long Perft(Board board, Depth depth) {
                     best_move = move;
                     table::SaveEntry(parallelBoard[omp_get_thread_num()].get_hash(), move, score);
                     go=false;
-                    #pragma omp flush(go)
+                    #pragma omp flush(go,end_score)
                     end_score = score;
                     #pragma omp flush(end_score)
                 }
@@ -206,7 +206,7 @@ Move DepthSearch(Board board, Depth depth) {
 
       return best_move;
     }
-
+Depth starting_depth;
     Move ParallelSearch(Board board, Depth depth){
       // Measure complete search time
       Time complete_begin = now();
@@ -215,6 +215,7 @@ Move DepthSearch(Board board, Depth depth) {
 
         std::cout << std::endl << "depth: " << current_depth << std::endl;
         // Measure search time
+          starting_depth=current_depth;
         Time begin = now();
 
         Score score = AlphaBeta(board, kMinScore, kMaxScore, current_depth);
@@ -241,7 +242,7 @@ Move DepthSearch(Board board, Depth depth) {
 
 
     bool depthPattern(Depth depth){//for sequential just return false
-        return false;
+        return !(depth%4);//starting_depth
     }
 
 }
