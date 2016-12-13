@@ -9,6 +9,7 @@
 #define GENERAL_TYPES_H_
 
 #include <cstdint>
+#include <chrono>
 #include "debug.h"
 
 //A bitboard is a 64bit boolean feature representation of the board.
@@ -32,6 +33,10 @@ typedef int32_t Score;
 typedef int32_t Depth;
 typedef int32_t CastlingRights;
 typedef uint64_t HashType;
+typedef std::chrono::time_point<std::chrono::steady_clock> Time;
+typedef std::chrono::milliseconds Milliseconds;
+
+inline Time now() { return std::chrono::steady_clock::now(); }
 
 const Color kWhite = 0;
 const Color kBlack = 1;
