@@ -24,6 +24,7 @@ struct Sorter {
 
 std::mt19937_64 rng;
 Move best_move = 0;
+bool parallel = true;
 
 const Score kMaxScore = 100000;
 const Score kMinScore = -100000;
@@ -113,16 +114,16 @@ long Perft(Board board, Depth depth) {
         std::vector<Score> parallelAlpha = std::vector<Score>(settings::num_threads);
         for(int i = 0; i<settings::num_threads;i++){
             best_local_move[i] = moves[0];
-            parallelBoard[i] = board.copy();//Todo make copy, don't reference
-            parallelAlpha[i] = alpha;//Todo not reference, since Score is int?
+            parallelBoard[i] = board.copy();
+            parallelAlpha[i] = alpha;
         }
         omp_set_num_threads(settings::num_threads);
         omp_set_nested(1);
         bool go = true;
         Score end_score;
-#pragma omp parallel for
-        for ( int i = 0;(i<moves.size());i++) {
-            if(go){
+#pragma omp parallel for if(parallel)
+        for ( int i = 0;i<moves.size();i++) {
+            if(go){//already found better score then beta, skip rest of computation
                 Move move = moves[i];
                 parallelBoard[omp_get_thread_num()].Make(move);
                 if(settings::alphaPropagation&& (alpha > parallelAlpha[omp_get_thread_num()])) {
@@ -139,14 +140,14 @@ long Perft(Board board, Depth depth) {
                 if (score >= beta) {
                     best_move = move;
                     table::SaveEntry(parallelBoard[omp_get_thread_num()].get_hash(), move, score);
-                    go=false;
+                    go=false;//set go to false to skip rest of the moves in this branch
+                    end_score = score;//return value, since we can't exit a parallel for with a return.
+                    //flush the values to make them visible to all
                     #pragma omp flush(go,end_score)
-                    end_score = score;
-                    #pragma omp flush(end_score)
                 }
                 if (score > parallelAlpha[omp_get_thread_num()]) {
                     parallelAlpha[omp_get_thread_num()] = score;
-                    if(settings::alphaPropagation&&((parallelAlpha[omp_get_thread_num()]-settings::alphaChange)>alpha)){//Todo what is relevant improvement to cut more(best so far 15)
+                    if(settings::alphaPropagation&&((parallelAlpha[omp_get_thread_num()]-settings::alphaChange)>alpha)){//Todo what is relevant improvement to cut more(best so far 15, maybe us proportional improvement)
                         alpha = parallelAlpha[omp_get_thread_num()];
                         #pragma omp flush(alpha)
                     }
@@ -172,44 +173,46 @@ long Perft(Board board, Depth depth) {
 
 
 Move DepthSearch(Board board, Depth depth) {
-  //Move bestmoveSeq = SequentialSearch(board, depth);//never use this again, just set depthpattern to false
-  Move bestmove = ParallelSearch(board, depth);
+    Move bestmove = SequentialSearch(board, depth);
+  //Move bestmove = ParallelSearch(board, depth);
   return bestmove;
 }
 
     Move SequentialSearch(Board board, Depth depth){
       // Measure complete search time
-      clock_t complete_begin = clock();
+      parallel = false;
+        Time complete_begin = now();
 
       for (Depth current_depth = 1; current_depth <= depth; current_depth++) {
         std::cout << std::endl << "depth: " << current_depth << std::endl;
         // Measure search time
-        clock_t begin = clock();
+        Time begin = now();
 
         Score score = AlphaBeta(board, kMinScore, kMaxScore, current_depth);
 
-        clock_t end = clock();
-        double elapsed_secs = double(end-begin) / CLOCKS_PER_SEC;
+        Time end = now();
+          std::chrono::duration<double> elapsed_secs = std::chrono::duration_cast<std::chrono::duration<double> >(end-begin);
 
-        //    std::fstream file;
+          //    std::fstream file;
         //    file.open("/home/jonas/parallel-log.txt");
         //    file << "Move: " << parse::MoveToString(best_move) << std::endl;
         //    file.close();
         std::cout << "info " << "cp " << score << " pv "
                   << parse::MoveToString(best_move) << std::endl;
-        std::cout << "Elapsed time (depth " << current_depth << "): " << elapsed_secs << std::endl;
+        std::cout << "Elapsed time (depth " << current_depth << "): " << elapsed_secs.count() << std::endl;
       }
 
       // Print elapsed search time
-      clock_t complete_end = clock();
-      double elapsed_secs = double(complete_end-complete_begin) / CLOCKS_PER_SEC;
-      std::cout << "SEQUENTIAL Elapsed time total: " << elapsed_secs << std::endl;
+      Time complete_end = now();
+        std::chrono::duration<double> elapsed_secs = std::chrono::duration_cast<std::chrono::duration<double> >(complete_end-complete_begin);
+        std::cout << "SEQUENTIAL Elapsed time total: " << elapsed_secs.count() << std::endl;
 
       return best_move;
     }
 Depth starting_depth;
     Move ParallelSearch(Board board, Depth depth){
       // Measure complete search time
+      parallel = true;
       Time complete_begin = now();
 
       for (Depth current_depth = 1; current_depth <= depth; current_depth++) {
@@ -242,8 +245,8 @@ Depth starting_depth;
     }
 
 
-    bool depthPattern(Depth depth){//for sequential just return false
-        return !(depth%4);//depth==(starting_depth-1);//starting_depth
+    bool depthPattern(Depth depth){
+        return depth==(starting_depth-1)||depth==(starting_depth-2);//starting_depth
     }
 
 }
