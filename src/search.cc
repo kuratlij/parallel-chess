@@ -121,7 +121,7 @@ long Perft(Board board, Depth depth) {
         omp_set_nested(1);
         bool go = true;
         Score end_score;
-#pragma omp parallel for if(parallel)
+#pragma omp parallel for ordered if(parallel)
         for ( int i = 0;i<moves.size();i++) {
             if(go){//already found better score then beta, skip rest of computation
                 Move move = moves[i];
@@ -143,13 +143,15 @@ long Perft(Board board, Depth depth) {
                     go=false;//set go to false to skip rest of the moves in this branch
                     end_score = score;//return value, since we can't exit a parallel for with a return.
                     //flush the values to make them visible to all
+
                     #pragma omp flush(go,end_score)
                 }
                 if (score > parallelAlpha[omp_get_thread_num()]) {
                     parallelAlpha[omp_get_thread_num()] = score;
                     if(settings::alphaPropagation&&((parallelAlpha[omp_get_thread_num()]-settings::alphaChange)>alpha)){//Todo what is relevant improvement to cut more(best so far 15, maybe us proportional improvement)
+                        #pragma omp atomic write
                         alpha = parallelAlpha[omp_get_thread_num()];
-                        #pragma omp flush(alpha)
+                        #pragma omp if(settings::alphaPropagation) flush(alpha)
                     }
                     best_local_move[omp_get_thread_num()] = move;
                 }
@@ -173,8 +175,8 @@ long Perft(Board board, Depth depth) {
 
 
 Move DepthSearch(Board board, Depth depth) {
-    Move bestmove = SequentialSearch(board, depth);//still use depthpattern(){return false} for sequential runs since there is a overhead in the parallel version of alpha-beta
-    //Move bestmove = ParallelSearch(board, depth);
+    //Move bestmove = SequentialSearch(board, depth);//still use depthpattern(){return false} for sequential runs since there is a overhead in the parallel version of alpha-beta
+    Move bestmove = ParallelSearch(board, depth);
   return bestmove;
 }
 
@@ -246,7 +248,10 @@ Depth starting_depth;
 
 
     bool depthPattern(Depth depth){//still use false for sequential runs since there is a overhead in the parallel version
-        return true;//depth==(starting_depth-1);//||depth==(starting_depth-2);//starting_depth
+        //Todo maybe just define a 2-D array with depth and starting_depth coordinates
+        //Don't parallelize in the starting depth
+        //return depth>4&&depth<starting_depth;
+        return depth>4&&depth<starting_depth;//(starting_depth - 1) == depth;//false;//starting_depth
     }
 
 }
