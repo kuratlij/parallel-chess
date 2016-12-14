@@ -173,8 +173,8 @@ long Perft(Board board, Depth depth) {
 
 
 Move DepthSearch(Board board, Depth depth) {
-    Move bestmove = SequentialSearch(board, depth);
-  //Move bestmove = ParallelSearch(board, depth);
+    Move bestmove = SequentialSearch(board, depth);//still use depthpattern(){return false} for sequential runs since there is a overhead in the parallel version of alpha-beta
+    //Move bestmove = ParallelSearch(board, depth);
   return bestmove;
 }
 
@@ -245,8 +245,8 @@ Depth starting_depth;
     }
 
 
-    bool depthPattern(Depth depth){
-        return depth==(starting_depth-1)||depth==(starting_depth-2);//starting_depth
+    bool depthPattern(Depth depth){//still use false for sequential runs since there is a overhead in the parallel version
+        return true;//depth==(starting_depth-1);//||depth==(starting_depth-2);//starting_depth
     }
 
 }
