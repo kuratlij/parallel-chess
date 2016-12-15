@@ -99,7 +99,12 @@ void Loop() {
       }
     }
     else if (Equals(command, "go")) {
-      Move move = search::DepthSearch(board, 8);
+      Depth depth = 8;
+      if (tokens.size() == index+2) {
+        std::string arg = tokens[index++];
+        depth = atoi(tokens[index++].c_str());
+      }
+      Move move = search::DepthSearch(board, depth);
       board.Make(move);
       std::cout << "bestmove " << parse::MoveToString(move) << std::endl;
     }
