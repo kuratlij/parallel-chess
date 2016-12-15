@@ -122,6 +122,10 @@ void Loop() {
       }
       std::cout << "depth: " << depth << " perft: " << sum << std::endl;
     }
+    else if (Equals(command, "parallel")) {
+      int run_parallel = atoi(tokens[index++].c_str());
+      settings::set_run_parallel(run_parallel == 1);
+    }
     else {
       Reply("Received unknown command: " + command);
     }
