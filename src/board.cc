@@ -104,6 +104,7 @@ void PrintStandardRow(std::string first_delim, std::string mid_delim, std::strin
 
 Board::Board() {
   hash = 0;
+  made_plies = 0;
   en_passant = 0;
   for (int player = kWhite; player <= kBlack; player++) {
     for (int piece_type = 0; piece_type < kNumPieceTypes; piece_type++) {
@@ -134,6 +135,7 @@ Board::Board() {
 
 void Board::SetStartBoard() {
   hash = 0;
+  made_plies = 0;
   en_passant = 0;
   for (int player = kWhite; player <= kBlack; player++) {
     for (int piece_type = 0; piece_type < kNumPieceTypes; piece_type++) {
@@ -371,7 +373,6 @@ std::vector<Move> Board::GetMoves() {
   BitBoard empty = (~own_pieces) & (~enemy_pieces);
 
   //King
-  //TODO: Add castling
   BitBoard king = piece_bitboards[turn][kKing];
   king |= bitops::E(king) | bitops::W(king);
   king |= bitops::N(king) | bitops::S(king);

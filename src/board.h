@@ -56,6 +56,8 @@ private:
   CastlingRights castling_rights;
   Square en_passant;
   Color turn;
+  //Ply refers to the number of played halfmoves
+  int32_t made_plies;
   HashType hash;
 };
 

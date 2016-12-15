@@ -74,7 +74,7 @@ long Perft(Board board, Depth depth) {
         for (unsigned int i = 0; i < moves.size(); i++) {
             Move move = moves[i];
             board.Make(move);Score score;
-            if (i == 0) {
+            if (i == 0 || (beta-alpha==1)) {
               if(depthPattern(depth)){
                   score = -ParallelAlphaBeta(board, -beta, -alpha, depth - 1);
               }
