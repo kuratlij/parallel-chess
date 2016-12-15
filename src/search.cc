@@ -71,13 +71,30 @@ long Perft(Board board, Depth depth) {
             std::sort(moves.begin(), moves.end(), Sorter(entry.best_move));
         }
         Move best_local_move = moves[0];
-        for (Move move : moves) {
+        for (unsigned int i = 0; i < moves.size(); i++) {
+            Move move = moves[i];
             board.Make(move);Score score;
-            if(depthPattern(depth)){
-                score = -ParallelAlphaBeta(board, -beta, -alpha, depth - 1);
+            if (i == 0) {
+              if(depthPattern(depth)){
+                  score = -ParallelAlphaBeta(board, -beta, -alpha, depth - 1);
+              }
+              else{
+                  score = -AlphaBeta(board, -beta, -alpha, depth - 1);
+              }
             }
-            else{
-                score = -AlphaBeta(board, -beta, -alpha, depth - 1);
+            else {
+              if(depthPattern(depth)){
+                  score = -ParallelAlphaBeta(board, -(alpha+1), -alpha, depth - 1);
+                  if (score == alpha+1) {
+                    score = -ParallelAlphaBeta(board, -beta, -alpha, depth - 1);
+                  }
+              }
+              else{
+                  score = -AlphaBeta(board, -(alpha+1), -alpha, depth - 1);
+                  if (score == alpha+1) {
+                    score = -AlphaBeta(board, -beta, -alpha, depth - 1);
+                  }
+              }
             }
             board.UnMake();
             if (score >= beta) {
