@@ -22,6 +22,8 @@ void Initialize();
 Entry GetEntry(HashType hash);
 void SaveEntry(HashType hash, Move best_move, Score score);
 bool ValidateHash(Entry entry,HashType hash);
+void ClearTable();
+
 }
 
 #endif /* TRANSPOSITION_H_ */
