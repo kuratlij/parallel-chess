@@ -31,6 +31,16 @@ void Error(const std::string message, bool exit) {
   }
 }
 
+void SearchDebug(std::string message, int depth) {
+  if (kDebugSearch) {
+    std::cout << "d" << depth << ":";
+    for (int d = 2; d >= depth; d--) {
+      std::cout << "  ";
+    }
+    std::cout << message << std::endl;
+  }
+}
+
 }
 
 
