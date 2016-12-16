@@ -147,7 +147,8 @@ void Loop() {
         settings::set_run_parallel(run_parallel == 1);
         int game_nr = atoi(tokens[index++].c_str());
         Test test;
-        test.run(game_nr, 5);
+//        test.run(game_nr, 5);
+        test.test_fens(16,5,1);
     }
     else {
       Reply("Received unknown command: " + command);

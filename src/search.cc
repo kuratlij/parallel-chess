@@ -317,6 +317,7 @@ Move TestSequentialSearch(Board board, Depth depth, std::string file_path){
   std::chrono::duration<double> elapsed_secs = std::chrono::duration_cast<std::chrono::duration<double> >(complete_end-complete_begin);
   std::cout << "SEQUENTIAL Elapsed time total: " << elapsed_secs.count() << std::endl;
 
+
   // Write time to file
   std::cout << "path" << file_path << std::endl;
   std::ofstream csv;
