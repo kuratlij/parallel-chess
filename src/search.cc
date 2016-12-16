@@ -58,7 +58,6 @@ long Perft(Board board, Depth depth) {
 }
 
     Score AlphaBeta(Board board, Score alpha, Score beta, Depth depth) {
-        std::cout<<"s"<<depth<<"t"<<omp_get_thread_num()<<" "<<alpha<<","<<beta<<","<<"   ";
         if (depth == 0) {
             return evaluation::ScoreBoard(board);
         }
@@ -76,8 +75,11 @@ long Perft(Board board, Depth depth) {
         Move best_local_move = moves[0];
         for (unsigned int i = 0; i < moves.size(); i++) {
             Move move = moves[i];
-            board.Make(move);Score score;
+            board.Make(move);
+            debug::SearchDebug(">>"+parse::MoveToString(move)+" t"+std::to_string(omp_get_thread_num()), depth);
+            Score score;
             if (i == 0 || (is_null_window(alpha, beta))) {
+              debug::SearchDebug("["+std::to_string(alpha)+","+std::to_string(beta)+"] t"+std::to_string(omp_get_thread_num()), depth);
               if(depthPattern(depth)){
                   score = -ParallelAlphaBeta(board, -beta, -alpha, depth - 1);
               }
@@ -86,21 +88,23 @@ long Perft(Board board, Depth depth) {
               }
             }
             else {
+              debug::SearchDebug("["+std::to_string(alpha)+","+std::to_string(alpha+1)+"] t"+std::to_string(omp_get_thread_num()), depth);
               if(depthPattern(depth)){
                   score = -ParallelAlphaBeta(board, -(alpha+1), -alpha, depth - 1);
                   if (score >= (alpha+1)) {
-                      std::cout<<"b"<<score;
+                    debug::SearchDebug("["+std::to_string(alpha)+","+std::to_string(beta)+"] t"+std::to_string(omp_get_thread_num()), depth);
                     score = -ParallelAlphaBeta(board, -beta, -alpha, depth - 1);
                   }
               }
               else{
                   score = -AlphaBeta(board, -(alpha+1), -alpha, depth - 1);
                   if (score >= (alpha+1)) {
-                      std::cout<<"b"<<score;
+                    debug::SearchDebug("["+std::to_string(alpha)+","+std::to_string(beta)+"] t"+std::to_string(omp_get_thread_num()), depth);
                     score = -AlphaBeta(board, -beta, -alpha, depth - 1);
                   }
               }
             }
+            debug::SearchDebug("<<"+parse::MoveToString(move)+" "+std::to_string(score)+" t"+std::to_string(omp_get_thread_num()), depth);
             board.UnMake();
             if (score >= beta) {
                 best_move = move;
@@ -113,12 +117,11 @@ long Perft(Board board, Depth depth) {
             }
         }
         best_move = best_local_move;
-        std::cout<<"e"<<depth<<"t"<<omp_get_thread_num();
         return alpha;
     }
 
     Score ParallelAlphaBeta(Board board, Score alpha, Score beta, Depth depth) {
-        std::cout<<"ps"<<depth<<"t"<<omp_get_thread_num()<<" "<<alpha<<","<<beta<<","<<"   ";
+        debug::SearchDebug("ps t"+std::to_string(omp_get_thread_num())+" "+std::to_string(alpha)+","+std::to_string(beta), depth);
         if (depth == 0) {
             return evaluation::ScoreBoard(board);
         }
@@ -147,39 +150,42 @@ long Perft(Board board, Depth depth) {
                 if (go) {//already found better score then beta, skip rest of computation
                     Move move = private_moves[i];
                     privateBoard.Make(move);
+                    debug::SearchDebug(">>"+parse::MoveToString(move)+" pt"+std::to_string(omp_get_thread_num()), depth);
                     if (settings::alphaPropagation && (is_null_window(alpha, beta)) && (alpha > privateAlpha)) {
                         privateAlpha = alpha;
                     }
                     Score score;
                     if (i < settings::num_threads || (is_null_window(privateAlpha, beta))) {
-                        if (depthPattern(depth)) {
+                      debug::SearchDebug("["+std::to_string(privateAlpha)+","+std::to_string(beta)+"] pt"+std::to_string(omp_get_thread_num()), depth);
+                      if (depthPattern(depth)) {
                             score = -ParallelAlphaBeta(privateBoard, -beta, -privateAlpha, depth - 1);
                         } else {
                             score = -AlphaBeta(privateBoard, -beta, -privateAlpha, depth - 1);
                         }
                     } else {
+                      debug::SearchDebug("["+std::to_string(privateAlpha)+","+std::to_string(privateAlpha+1)+"] pt"+std::to_string(omp_get_thread_num()), depth);
                         if(depthPattern(depth)){
-                            score = -ParallelAlphaBeta(board, -(privateAlpha+1), -privateAlpha, depth - 1);
+                            score = -ParallelAlphaBeta(privateBoard, -(privateAlpha+1), -privateAlpha, depth - 1);
                             if (score >= (privateAlpha+1)) {
-                                std::cout<<"pb"<<score<<"d"<<depth;
-                                score = -ParallelAlphaBeta(board, -beta, -privateAlpha, depth - 1);
+                              debug::SearchDebug("["+std::to_string(privateAlpha)+","+std::to_string(beta)+"] pt"+std::to_string(omp_get_thread_num()), depth);
+                                score = -ParallelAlphaBeta(privateBoard, -beta, -privateAlpha, depth - 1);
                             }
                         }
                         else{
-                            score = -AlphaBeta(board, -(privateAlpha+1), -privateAlpha, depth - 1);
+                            score = -AlphaBeta(privateBoard, -(privateAlpha+1), -privateAlpha, depth - 1);
                             if (score >= (privateAlpha+1)) {
-                                std::cout<<"pb"<<score<<"d"<<depth;
-                                score = -AlphaBeta(board, -beta, -privateAlpha, depth - 1);
+                              debug::SearchDebug("["+std::to_string(privateAlpha)+","+std::to_string(beta)+"] pt"+std::to_string(omp_get_thread_num()), depth);
+                                score = -AlphaBeta(privateBoard, -beta, -privateAlpha, depth - 1);
                             }
                         }
                     }
+                    debug::SearchDebug("<<"+parse::MoveToString(move)+" "+std::to_string(score)+" pt"+std::to_string(omp_get_thread_num()), depth);
                     privateBoard.UnMake();
                     if (score >= beta) {
                         best_move = move;
                         table::SaveEntry(privateBoard.get_hash(), move, score);
                         go = false;//set go to false to skip rest of the moves in this branch
                         //flush the values to make them visible to all
-
 #pragma omp flush(go)
                     }
                     if (score > privateAlpha) {
@@ -204,20 +210,17 @@ long Perft(Board board, Depth depth) {
         if(!go){
             return beta;
         }
-
-        std::cout<<"pe"<<depth<<"t"<<omp_get_thread_num();
         return alpha;
     }
 
 
 
 
-
 Move DepthSearch(Board board, Depth depth) {
-    //Move bestmove = SequentialSearch(board, depth);//still use depthpattern(){return false} for sequential runs since there is a overhead in the parallel version of alpha-beta
-    //Move bestmove2 = SequentialSearch(board, depth);
-    Move bestmove = ParallelSearch(board, depth);
-  return bestmove;
+  if (settings::get_run_parallel()) {
+    return ParallelSearch(board, depth);
+  }
+  return SequentialSearch(board, depth);
 }
 
     Move SequentialSearch(Board board, Depth depth){
@@ -294,7 +297,7 @@ Depth starting_depth;
         if(!parallel){
             return false;
         }
-        return 2 == depth;//false;//starting_depth
+        return 3 == depth;//false;//starting_depth
     }
 
 }

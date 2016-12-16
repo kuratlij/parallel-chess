@@ -17,7 +17,7 @@ namespace debug {
 const bool kDebug = false;
 const bool kDebugMain = true;
 const bool kDebugBoard = true;
-const bool kDebugSearch = true;
+const bool kDebugSearch = false;
 const bool kDebugUCI = true;
 const bool kDebugEvaluation = true;
 
@@ -31,6 +31,10 @@ void Print(const std::string message, const bool condition = true,
 
 void Error(const std::string message, bool exit=true);
 
+void SearchDebug(std::string message, int depth);
+
+
 }
+
 
 #endif
