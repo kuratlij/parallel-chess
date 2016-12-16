@@ -8,7 +8,6 @@
 #include "search.h"
 #include <iostream>
 #include <fstream>
-#include <ctime>
 #include "omp.h"
 
 namespace {
@@ -57,172 +56,172 @@ long Perft(Board board, Depth depth) {
   return perft_sum;
 }
 
-    Score AlphaBeta(Board board, Score alpha, Score beta, Depth depth, Time end_time) {
-      if(finished(end_time)){
-        return 0;
+Score AlphaBeta(Board board, Score alpha, Score beta, Depth depth, Time end_time) {
+  if(finished(end_time)){
+    return 0;
+  }
+  if (depth == 0) {
+      return evaluation::ScoreBoard(board);
+  }
+  std::vector<Move> moves = board.GetMoves();
+  if (moves.size() == 0) {
+      if (board.InCheck()) {
+          return kMinScore;
       }
-      if (depth == 0) {
-            return evaluation::ScoreBoard(board);
-        }
-        std::vector<Move> moves = board.GetMoves();
-        if (moves.size() == 0) {
-            if (board.InCheck()) {
-                return kMinScore;
-            }
-            return 0;
-        }
-        table::Entry entry = table::GetEntry(board.get_hash());
-        if (table::ValidateHash(entry,board.get_hash())) {
-            std::sort(moves.begin(), moves.end(), Sorter(entry.best_move));
-        }
-        Move best_local_move = moves[0];
-        for (unsigned int i = 0; i < moves.size(); i++) {
-          if(finished(end_time)){
-            return 0;
-          }
-            Move move = moves[i];
-            board.Make(move);
-            debug::SearchDebug(">>"+parse::MoveToString(move)+" t"+std::to_string(omp_get_thread_num()), depth);
-            Score score;
-            if (i == 0 || (is_null_window(alpha, beta))) {
-              debug::SearchDebug("["+std::to_string(alpha)+","+std::to_string(beta)+"] t"+std::to_string(omp_get_thread_num()), depth);
-              if(depthPattern(depth)){
-                  score = -ParallelAlphaBeta(board, -beta, -alpha, depth - 1, end_time);
-              }
-              else{
-                  score = -AlphaBeta(board, -beta, -alpha, depth - 1, end_time);
-              }
-            }
-            else {
-              debug::SearchDebug("["+std::to_string(alpha)+","+std::to_string(alpha+1)+"] t"+std::to_string(omp_get_thread_num()), depth);
-              if(depthPattern(depth)){
-                  score = -ParallelAlphaBeta(board, -(alpha+1), -alpha, depth - 1, end_time);
-                  if (score >= (alpha+1)) {
-                    debug::SearchDebug("["+std::to_string(alpha)+","+std::to_string(beta)+"] t"+std::to_string(omp_get_thread_num()), depth);
-                    score = -ParallelAlphaBeta(board, -beta, -alpha, depth - 1, end_time);
-                  }
-              }
-              else{
-                  score = -AlphaBeta(board, -(alpha+1), -alpha, depth - 1, end_time);
-                  if (score >= (alpha+1)) {
-                    debug::SearchDebug("["+std::to_string(alpha)+","+std::to_string(beta)+"] t"+std::to_string(omp_get_thread_num()), depth);
-                    score = -AlphaBeta(board, -beta, -alpha, depth - 1, end_time);
-                  }
-              }
-            }
-            debug::SearchDebug("<<"+parse::MoveToString(move)+" "+std::to_string(score)+" t"+std::to_string(omp_get_thread_num()), depth);
-            board.UnMake();
-            if (score >= beta) {
-                best_move = move;
-                table::SaveEntry(board.get_hash(), move, score);
-                return beta;
-            }
-            if (score > alpha) {
-                alpha = score;
-                best_local_move = move;
-            }
-        }
-        best_move = best_local_move;
-        return alpha;
+      return 0;
+  }
+  table::Entry entry = table::GetEntry(board.get_hash());
+  if (table::ValidateHash(entry,board.get_hash())) {
+      std::sort(moves.begin(), moves.end(), Sorter(entry.best_move));
+  }
+  Move best_local_move = moves[0];
+  for (unsigned int i = 0; i < moves.size(); i++) {
+    if(finished(end_time)){
+      return 0;
     }
+    Move move = moves[i];
+    board.Make(move);
+    debug::SearchDebug(">>"+parse::MoveToString(move)+" t"+std::to_string(omp_get_thread_num()), depth);
+    Score score;
+    if (i == 0 || (is_null_window(alpha, beta))) {
+      debug::SearchDebug("["+std::to_string(alpha)+","+std::to_string(beta)+"] t"+std::to_string(omp_get_thread_num()), depth);
+      if(depthPattern(depth)){
+        score = -ParallelAlphaBeta(board, -beta, -alpha, depth - 1, end_time);
+      }
+      else{
+        score = -AlphaBeta(board, -beta, -alpha, depth - 1, end_time);
+      }
+    }
+    else {
+      debug::SearchDebug("["+std::to_string(alpha)+","+std::to_string(alpha+1)+"] t"+std::to_string(omp_get_thread_num()), depth);
+      if(depthPattern(depth)){
+        score = -ParallelAlphaBeta(board, -(alpha+1), -alpha, depth - 1, end_time);
+        if (score >= (alpha+1)) {
+          debug::SearchDebug("["+std::to_string(alpha)+","+std::to_string(beta)+"] t"+std::to_string(omp_get_thread_num()), depth);
+          score = -ParallelAlphaBeta(board, -beta, -alpha, depth - 1, end_time);
+        }
+      }
+      else{
+        score = -AlphaBeta(board, -(alpha+1), -alpha, depth - 1, end_time);
+        if (score >= (alpha+1)) {
+          debug::SearchDebug("["+std::to_string(alpha)+","+std::to_string(beta)+"] t"+std::to_string(omp_get_thread_num()), depth);
+          score = -AlphaBeta(board, -beta, -alpha, depth - 1, end_time);
+        }
+      }
+    }
+    debug::SearchDebug("<<"+parse::MoveToString(move)+" "+std::to_string(score)+" t"+std::to_string(omp_get_thread_num()), depth);
+    board.UnMake();
+    if (score >= beta) {
+      best_move = move;
+      table::SaveEntry(board.get_hash(), move, score);
+      return beta;
+    }
+    if (score > alpha) {
+      alpha = score;
+      best_local_move = move;
+    }
+  }
+  best_move = best_local_move;
+  return alpha;
+}
 
-    Score ParallelAlphaBeta(Board board, Score alpha, Score beta, Depth depth, Time end_time) {
-        debug::SearchDebug("ps t"+std::to_string(omp_get_thread_num())+" "+std::to_string(alpha)+","+std::to_string(beta), depth);
-        if (depth == 0) {
-            return evaluation::ScoreBoard(board);
-        }
-        std::vector<Move> moves = board.GetMoves();
-        if (moves.size() == 0) {
-            if (board.InCheck()) {
-                return kMinScore;
-            }
-            return 0;
-        }
-        table::Entry entry = table::GetEntry(board.get_hash());
-        if (table::ValidateHash(entry,board.get_hash())) {
-            std::sort(moves.begin(), moves.end(), Sorter(entry.best_move));
-        }
-        bool go = true;
-        omp_set_num_threads(settings::num_threads);
-        omp_set_nested(1);
-
+Score ParallelAlphaBeta(Board board, Score alpha, Score beta, Depth depth, Time end_time) {
+  debug::SearchDebug("ps t"+std::to_string(omp_get_thread_num())+" "+std::to_string(alpha)+","+std::to_string(beta), depth);
+  if (depth == 0) {
+    return evaluation::ScoreBoard(board);
+  }
+  std::vector<Move> moves = board.GetMoves();
+  if (moves.size() == 0) {
+    if (board.InCheck()) {
+      return kMinScore;
+    }
+    return 0;
+  }
+  table::Entry entry = table::GetEntry(board.get_hash());
+  if (table::ValidateHash(entry,board.get_hash())) {
+    std::sort(moves.begin(), moves.end(), Sorter(entry.best_move));
+  }
+  bool go = true;
+  omp_set_num_threads(settings::num_threads);
+  omp_set_nested(1);
 #pragma omp parallel
-        {
-            std::vector<Move> private_moves = moves;
-            Score privateAlpha = alpha;
-            Board privateBoard = board.copy();
-            Move private_best_local_move = private_moves[0];
-            for (int i = omp_get_thread_num(); i < private_moves.size(); i+=settings::num_threads) {
-                if (!go || finished(end_time)){
-                  break;//already found better score then beta, skip rest of computation
-                }
-                Move move = private_moves[i];
-                privateBoard.Make(move);
-                debug::SearchDebug(">>"+parse::MoveToString(move)+" pt"+std::to_string(omp_get_thread_num()), depth);
-                if (settings::alphaPropagation && (alpha > privateAlpha)) {
-                    privateAlpha = alpha;
-                }
-                Score score;
-                if (i < settings::num_threads || (is_null_window(privateAlpha, beta))) {
-                  debug::SearchDebug("["+std::to_string(privateAlpha)+","+std::to_string(beta)+"] pt"+std::to_string(omp_get_thread_num()), depth);
-                  if (depthPattern(depth)) {
-                        score = -ParallelAlphaBeta(privateBoard, -beta, -privateAlpha, depth - 1, end_time);
-                    } else {
-                        score = -AlphaBeta(privateBoard, -beta, -privateAlpha, depth - 1 , end_time);
-                    }
-                } else {
-                  debug::SearchDebug("["+std::to_string(privateAlpha)+","+std::to_string(privateAlpha+1)+"] pt"+std::to_string(omp_get_thread_num()), depth);
-                    if(depthPattern(depth)){
-                        score = -ParallelAlphaBeta(privateBoard, -(privateAlpha+1), -privateAlpha, depth - 1, end_time);
-                        if (score >= (privateAlpha+1)) {
-                          debug::SearchDebug("["+std::to_string(privateAlpha)+","+std::to_string(beta)+"] pt"+std::to_string(omp_get_thread_num()), depth);
-                            score = -ParallelAlphaBeta(privateBoard, -beta, -privateAlpha, depth - 1, end_time);
-                        }
-                    }
-                    else{
-                        score = -AlphaBeta(privateBoard, -(privateAlpha+1), -privateAlpha, depth - 1, end_time);
-                        if (score >= (privateAlpha+1)) {
-                          debug::SearchDebug("["+std::to_string(privateAlpha)+","+std::to_string(beta)+"] pt"+std::to_string(omp_get_thread_num()), depth);
-                            score = -AlphaBeta(privateBoard, -beta, -privateAlpha, depth - 1, end_time);
-                        }
-                    }
-                }
-                debug::SearchDebug("<<"+parse::MoveToString(move)+" "+std::to_string(score)+" pt"+std::to_string(omp_get_thread_num()), depth);
-                privateBoard.UnMake();
-                if (score >= beta && !finished(end_time)) {
-                    best_move = move;
-                    table::SaveEntry(privateBoard.get_hash(), move, score);
-                    go = false;//set go to false to skip rest of the moves in this branch
-                    //flush the values to make them visible to all
-#pragma omp flush(go)
-                }
-                if (score > privateAlpha) {
-                    privateAlpha = score;
-                    if (settings::alphaPropagation && ((privateAlpha - settings::alphaChange) > alpha)) {//Todo what is relevant improvement to cut more(best so far 15, maybe us proportional improvement)
-#pragma omp atomic write
-                        alpha = privateAlpha;
-#pragma omp flush(alpha)
-                      }
-                    private_best_local_move = move;
-                }
-
-        }
-#pragma omp critical
-            {
-            if(privateAlpha>alpha){
-                best_move = private_best_local_move;
-                alpha=privateAlpha;
-            }
-            }
-        }
-      if(finished(end_time)){
-        return 0;
-      }
-      if(!go) {
-        return beta;
-      }
-      return alpha;
+  {
+  std::vector<Move> private_moves = moves;
+  Score privateAlpha = alpha;
+  Board privateBoard = board.copy();
+  Move private_best_local_move = private_moves[0];
+  for (int i = omp_get_thread_num(); i < private_moves.size(); i+=settings::num_threads) {
+    if (!go || finished(end_time)){
+      break;//already found better score then beta, skip rest of computation
     }
+    Move move = private_moves[i];
+    privateBoard.Make(move);
+    debug::SearchDebug(">>"+parse::MoveToString(move)+" pt"+std::to_string(omp_get_thread_num()), depth);
+    if (settings::alphaPropagation && (alpha > privateAlpha)) {
+      privateAlpha = alpha;
+    }
+    Score score;
+    if (i < settings::num_threads || (is_null_window(privateAlpha, beta))) {
+      debug::SearchDebug("["+std::to_string(privateAlpha)+","+std::to_string(beta)+"] pt"+std::to_string(omp_get_thread_num()), depth);
+      if (depthPattern(depth)) {
+        score = -ParallelAlphaBeta(privateBoard, -beta, -privateAlpha, depth - 1, end_time);
+      }
+      else {
+        score = -AlphaBeta(privateBoard, -beta, -privateAlpha, depth - 1 , end_time);
+      }
+    }
+    else {
+      debug::SearchDebug("["+std::to_string(privateAlpha)+","+std::to_string(privateAlpha+1)+"] pt"+std::to_string(omp_get_thread_num()), depth);
+      if(depthPattern(depth)){
+        score = -ParallelAlphaBeta(privateBoard, -(privateAlpha+1), -privateAlpha, depth - 1, end_time);
+        if (score >= (privateAlpha+1)) {
+          debug::SearchDebug("["+std::to_string(privateAlpha)+","+std::to_string(beta)+"] pt"+std::to_string(omp_get_thread_num()), depth);
+          score = -ParallelAlphaBeta(privateBoard, -beta, -privateAlpha, depth - 1, end_time);
+        }
+      }
+      else {
+        score = -AlphaBeta(privateBoard, -(privateAlpha+1), -privateAlpha, depth - 1, end_time);
+        if (score >= (privateAlpha+1)) {
+          debug::SearchDebug("["+std::to_string(privateAlpha)+","+std::to_string(beta)+"] pt"+std::to_string(omp_get_thread_num()), depth);
+          score = -AlphaBeta(privateBoard, -beta, -privateAlpha, depth - 1, end_time);
+        }
+      }
+    }
+    debug::SearchDebug("<<"+parse::MoveToString(move)+" "+std::to_string(score)+" pt"+std::to_string(omp_get_thread_num()), depth);
+    privateBoard.UnMake();
+    if (score >= beta && !finished(end_time)) {
+      best_move = move;
+      table::SaveEntry(privateBoard.get_hash(), move, score);
+      go = false;//set go to false to skip rest of the moves in this branch
+        //flush the values to make them visible to all
+#pragma omp flush(go)
+    }
+    if (score > privateAlpha) {
+      privateAlpha = score;
+      if (settings::alphaPropagation && ((privateAlpha - settings::alphaChange) > alpha)) {//Todo what is relevant improvement to cut more(best so far 15, maybe us proportional improvement)
+#pragma omp atomic write
+        alpha = privateAlpha;
+#pragma omp flush(alpha)
+      }
+      private_best_local_move = move;
+    }
+  }//end local search
+#pragma omp critical
+  {
+  if(privateAlpha>alpha){
+      best_move = private_best_local_move;
+      alpha=privateAlpha;
+  }
+  }// end omp critical
+  }//end omp parallel
+  if(finished(end_time)){
+    return 0;
+  }
+  if(!go) {
+    return beta;
+  }
+  return alpha;
+}
 
 inline bool finished(Time end_time){
   return end_time < now();
@@ -337,7 +336,7 @@ Move ParallelSearch(Board board, Depth depth, Time end_time){
   // Measure complete search time
   parallel = true;
   Time complete_begin = now();
-  Move old_best_move;
+  Move old_best_move = 0;
   for (Depth current_depth = 1; current_depth <= depth; current_depth++) {
     if(finished(end_time)){
       break;

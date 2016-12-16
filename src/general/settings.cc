@@ -11,8 +11,8 @@
 namespace {
 
 bool run_parallel = true;
-std::string eval_path = "/home/jonas/dpbs/parallel-chess/chess_eval/";
-std::string fen_path = "/home/jonas/dpbs/parallel-chess/fens/";
+std::string eval_path = "./chess_eval/";
+std::string fen_path = "./fens/";
 
 
 }
