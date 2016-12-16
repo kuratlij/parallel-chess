@@ -6,6 +6,7 @@
  */
 
 #include "uci.h"
+#include "general/test.h"
 
 namespace {
 
@@ -99,7 +100,7 @@ void Loop() {
       }
     }
     else if (Equals(command, "go")) {
-      Depth depth = 8;
+      Depth depth = 5;
       if (tokens.size() == index+2) {
         std::string arg = tokens[index++];
         depth = atoi(tokens[index++].c_str());
@@ -125,6 +126,13 @@ void Loop() {
     else if (Equals(command, "parallel")) {
       int run_parallel = atoi(tokens[index++].c_str());
       settings::set_run_parallel(run_parallel == 1);
+    }
+    else if (Equals(command, "testplay")) {
+        int run_parallel = atoi(tokens[index++].c_str());
+        settings::set_run_parallel(run_parallel == 1);
+        int game_nr = atoi(tokens[index++].c_str());
+        Test test;
+        test.run(game_nr, 5);
     }
     else {
       Reply("Received unknown command: " + command);

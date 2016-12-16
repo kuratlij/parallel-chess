@@ -26,6 +26,7 @@ long Perft(Board board, Depth depth);
 Move DepthSearch(Board board, Depth depth);
     Move TestDepthSearch(Board board, Depth depth, std::string file_path);
 Move SequentialSearch(Board board, Depth depth);
+Move TestSequentialSearch(Board board, Depth depth, std::string file_path);
 Move ParallelSearch(Board board, Depth depth);
     Move TestParallelSearch(Board board, Depth depth, std::string file_path);
 bool depthPattern(Depth depth);

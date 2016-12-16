@@ -21,6 +21,8 @@ const int alphaChange = 15;
 void set_run_parallel(bool parallel);
 bool get_run_parallel();
 
+void set_eval_path(std::string path);
+std::string get_eval_path();
 }
 
 

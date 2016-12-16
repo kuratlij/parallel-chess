@@ -6,10 +6,13 @@
  */
 
 #include "settings.h"
+#include <string>
 
 namespace {
 
 bool run_parallel = true;
+std::string eval_path = "/home/jonas/chess_eval/";
+
 
 }
 
@@ -22,4 +25,10 @@ bool get_run_parallel() {
   return run_parallel;
 }
 
+void set_eval_path(std::string path){
+  eval_path = path;
+}
+std::string get_eval_path() {
+  return eval_path;
+}
 }

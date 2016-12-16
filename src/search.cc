@@ -223,12 +223,12 @@ Move DepthSearch(Board board, Depth depth) {
   return SequentialSearch(board, depth);
 }
 
-    Move TestDepthSearch(Board board, Depth depth, std::string file_path) {
-        //Move bestmove = SequentialSearch(board, depth);//still use depthpattern(){return false} for sequential runs since there is a overhead in the parallel version of alpha-beta
-        //Move bestmove2 = SequentialSearch(board, depth);
-        Move bestmove = TestParallelSearch(board, depth, file_path);
-        return bestmove;
-    }
+Move TestDepthSearch(Board board, Depth depth, std::string file_path) {
+  if (settings::get_run_parallel()) {
+    return TestParallelSearch(board, depth, file_path);
+  }
+  return TestSequentialSearch(board, depth, file_path);
+}
 
     Move SequentialSearch(Board board, Depth depth){
       // Measure complete search time
@@ -261,8 +261,84 @@ Move DepthSearch(Board board, Depth depth) {
 
       return best_move;
     }
+
+Move TestSequentialSearch(Board board, Depth depth, std::string file_path){
+  // Measure complete search time
+  parallel = false;
+  Time complete_begin = now();
+
+  for (Depth current_depth = 1; current_depth <= depth; current_depth++) {
+    std::cout << std::endl << "depth: " << current_depth << std::endl;
+    // Measure search time
+    Time begin = now();
+
+    Score score = AlphaBeta(board, kMinScore, kMaxScore, current_depth);
+
+    Time end = now();
+    std::chrono::duration<double> elapsed_secs = std::chrono::duration_cast<std::chrono::duration<double> >(end-begin);
+
+    //    std::fstream file;
+    //    file.open("/home/jonas/parallel-log.txt");
+    //    file << "Move: " << parse::MoveToString(best_move) << std::endl;
+    //    file.close();
+    std::cout << "info " << "cp " << score << " pv "
+              << parse::MoveToString(best_move) << std::endl;
+    std::cout << "Elapsed time (depth " << current_depth << "): " << elapsed_secs.count() << std::endl;
+  }
+
+  // Print elapsed search time
+  Time complete_end = now();
+  std::chrono::duration<double> elapsed_secs = std::chrono::duration_cast<std::chrono::duration<double> >(complete_end-complete_begin);
+  std::cout << "SEQUENTIAL Elapsed time total: " << elapsed_secs.count() << std::endl;
+
+  // Write time to file
+  std::cout << "path" << file_path << std::endl;
+  std::ofstream csv;
+  csv.open(file_path, std::ofstream::app);
+  csv << parse::MoveToString(best_move) << "," << elapsed_secs.count() << "," << depth << ";" << std::endl;
+  csv.flush();
+  csv.close();
+
+  return best_move;
+}
+
 Depth starting_depth;
-    Move ParallelSearch(Board board, Depth depth){
+
+
+Move ParallelSearch(Board board, Depth depth){
+  // Measure complete search time
+  parallel = true;
+  Time complete_begin = now();
+
+  for (Depth current_depth = 1; current_depth <= depth; current_depth++) {
+
+    std::cout << std::endl << "depth: " << current_depth << std::endl;
+    // Measure search time
+      starting_depth=current_depth;
+    Time begin = now();
+      Score score = AlphaBeta(board, kMinScore, kMaxScore, current_depth);
+
+    Time end = now();
+    std::chrono::duration<double> elapsed_secs = std::chrono::duration_cast<std::chrono::duration<double> >(end-begin);
+
+    //    std::fstream file;
+    //    file.open("/home/jonas/parallel-log.txt");
+    //    file << "Move: " << parse::MoveToString(best_move) << std::endl;
+    //    file.close();
+    std::cout << "info " << "cp " << score << " pv "
+              << parse::MoveToString(best_move) << std::endl;
+    std::cout << "Elapsed time (depth " << current_depth << "): " << elapsed_secs.count() << std::endl;
+  }
+
+  // Print elapsed search time
+  Time complete_end = now();
+    std::chrono::duration<double> elapsed_secs = std::chrono::duration_cast<std::chrono::duration<double> >(complete_end-complete_begin);
+    std::cout << "PARALLEL Elapsed time total: " << elapsed_secs.count() << std::endl;
+
+  return best_move;
+}
+
+    Move TestParallelSearch(Board board, Depth depth, std::string file_path){
       // Measure complete search time
       parallel = true;
       Time complete_begin = now();
@@ -271,9 +347,9 @@ Depth starting_depth;
 
         std::cout << std::endl << "depth: " << current_depth << std::endl;
         // Measure search time
-          starting_depth=current_depth;
+        starting_depth=current_depth;
         Time begin = now();
-          Score score = AlphaBeta(board, kMinScore, kMaxScore, current_depth);
+        Score score = AlphaBeta(board, kMinScore, kMaxScore, current_depth);
 
         Time end = now();
         std::chrono::duration<double> elapsed_secs = std::chrono::duration_cast<std::chrono::duration<double> >(end-begin);
@@ -289,50 +365,16 @@ Depth starting_depth;
 
       // Print elapsed search time
       Time complete_end = now();
-        std::chrono::duration<double> elapsed_secs = std::chrono::duration_cast<std::chrono::duration<double> >(complete_end-complete_begin);
-        std::cout << "PARALLEL Elapsed time total: " << elapsed_secs.count() << std::endl;
+      std::chrono::duration<double> elapsed_secs = std::chrono::duration_cast<std::chrono::duration<double> >(complete_end-complete_begin);
+      std::cout << "PARALLEL Elapsed time total: " << elapsed_secs.count() << std::endl;
 
-      return best_move;
-    }
-
-    Move TestParallelSearch(Board board, Depth depth, std::string file_path){
-        // Measure complete search time
-        parallel = true;
-        Time complete_begin = now();
-
-        for (Depth current_depth = 1; current_depth <= depth; current_depth++) {
-
-            std::cout << std::endl << "depth: " << current_depth << std::endl;
-            // Measure search time
-            starting_depth=current_depth;
-            Time begin = now();
-            Score score = kMinScore;
-            if(settings::get_run_parallel()){
-                score = ParallelAlphaBeta(board, kMinScore, kMaxScore, current_depth);
-            }else {
-                score = AlphaBeta(board, kMinScore, kMaxScore, current_depth);
-            }
-
-            Time end = now();
-            std::chrono::duration<double> elapsed_secs = std::chrono::duration_cast<std::chrono::duration<double> >(end-begin);
-
-            //    std::fstream file;
-            //    file.open("/home/jonas/parallel-log.txt");
-            //    file << "Move: " << parse::MoveToString(best_move) << std::endl;
-            //    file.close();
-            std::cout << "info " << "cp " << score << " pv "
-                      << parse::MoveToString(best_move) << std::endl;
-            std::cout << "Elapsed time (depth " << current_depth << "): " << elapsed_secs.count() << std::endl;
-        }
-
-        // Print elapsed search time
-        Time complete_end = now();
-        std::chrono::duration<double> elapsed_secs = std::chrono::duration_cast<std::chrono::duration<double> >(complete_end-complete_begin);
-        std::cout << "PARALLEL Elapsed time total: " << elapsed_secs.count() << std::endl;
-
-        std::fstream csv;
-        csv.open(file_path);
+      // Write time to file
+      std::cout << "path" << file_path << std::endl;
+        std::ofstream csv;
+        csv.open(file_path, std::ofstream::app);
         csv << parse::MoveToString(best_move) << "," << elapsed_secs.count() << "," << depth << ";" << std::endl;
+      csv.flush();
+      csv.close();
 
         return best_move;
     }
