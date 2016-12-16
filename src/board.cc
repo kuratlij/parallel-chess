@@ -133,6 +133,106 @@ Board::Board() {
   debug::Print("constructed board", debug::kDebugBoard);
 }
 
+void Board::SetBoard(std::string fen_code, std::string player_turn, std::string castling_rights_str){
+  hash = 0;
+  made_plies = 0;
+  en_passant = 0;
+
+
+  for (int player = kWhite; player <= kBlack; player++) {
+    for (int piece_type = 0; piece_type < kNumPieceTypes; piece_type++) {
+      piece_bitboards[player][piece_type] = 0;
+    }
+  }
+  for (Square square = parse::StringToSquare("a1");
+       square <= parse::StringToSquare("h8"); square++) {
+    pieces[square] = kNoPiece;
+  }
+
+
+  // Split fen_code by delimiters (forward slash)
+  const std::string delimiter = "/";
+  std::string row_repr = "xxx";
+  int pos = 0;
+  int row = 7;
+  int square = row * 8;
+
+  // Iterate over rows in fen format
+  while(row >= 0 && row_repr.length() > 0){
+    if((pos = fen_code.find(delimiter)) != std::string::npos){
+      row_repr = fen_code.substr(0, pos);
+    }else{
+      row_repr = fen_code;
+    }
+    int rr_length = row_repr.length();
+    for(int i = 0; i < rr_length; i++){
+      char c = fen_code[i];
+      switch (c){
+        case 'K': AddPiece(square, GetPiece(kWhite, kKing)); break;
+        case 'Q': AddPiece(square, GetPiece(kWhite, kQueen)); break;
+        case 'R': AddPiece(square, GetPiece(kWhite, kRook)); break;
+        case 'B': AddPiece(square, GetPiece(kWhite, kBishop)); break;
+        case 'N': AddPiece(square, GetPiece(kWhite, kKnight)); break;
+        case 'P': AddPiece(square, GetPiece(kWhite, kPawn)); break;
+
+        case 'k': AddPiece(square, GetPiece(kBlack, kKing)); break;
+        case 'q': AddPiece(square, GetPiece(kBlack, kQueen)); break;
+        case 'r': AddPiece(square, GetPiece(kBlack, kRook)); break;
+        case 'b': AddPiece(square, GetPiece(kBlack, kBishop)); break;
+        case 'n': AddPiece(square, GetPiece(kBlack, kKnight)); break;
+        case 'p': AddPiece(square, GetPiece(kBlack, kPawn)); break;
+
+        case '1': square += 0; break;
+        case '2': square += 1; break;
+        case '3': square += 2; break;
+        case '4': square += 3; break;
+        case '5': square += 4; break;
+        case '6': square += 5; break;
+        case '7': square += 6; break;
+        case '8': square += 7; break;
+
+        default: break;
+      }
+
+      square++;
+    }
+
+    // Erase row
+    fen_code.erase(0, pos + delimiter.length());
+    row--;
+    square = row * 8;
+  }
+
+  // Whose turn is it?
+  turn = kWhite;
+  if(player_turn == "b"){
+    turn = kBlack;
+  }
+
+  // Evaluate remaining castling rights
+  evaluate_castling_rights(castling_rights_str);
+}
+
+void Board::evaluate_castling_rights(std::string fen_code){
+  std::cout << "Castling rights " << fen_code << std::endl;
+
+  castling_rights = 0;
+
+
+  int len = fen_code.length();
+  for(int i = 0; i < len; i++){
+    char c = fen_code[i];
+    switch (c){
+      case 'K': castling_rights |= kWSCastle; break;
+      case 'Q': castling_rights |= kWLCastle; break;
+      case 'k': castling_rights |= kBSCastle; break;
+      case 'q': castling_rights |= kBLCastle; break;
+
+      default: break;
+    }
+  }
+}
+
 void Board::SetStartBoard() {
   hash = 0;
   made_plies = 0;
