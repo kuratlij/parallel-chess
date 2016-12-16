@@ -24,8 +24,10 @@ Move GetRandomMove(Board board);
 
 long Perft(Board board, Depth depth);
 Move DepthSearch(Board board, Depth depth);
+    Move TestDepthSearch(Board board, Depth depth, std::string file_path);
 Move SequentialSearch(Board board, Depth depth);
 Move ParallelSearch(Board board, Depth depth);
+    Move TestParallelSearch(Board board, Depth depth, std::string file_path);
 bool depthPattern(Depth depth);
 Score AlphaBeta(Board board, Score alpha, Score beta, Depth depth);
 Score ParallelAlphaBeta(Board board, Score alpha, Score beta, Depth depth);
