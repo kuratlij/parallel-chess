@@ -333,6 +333,7 @@ void Board::Make(Move move) {
     break;
   case kEnPassant:
     RemovePiece(GetMoveDestination(move) - 8 + (2*8) * turn);
+    break;
   default:
     if (GetMoveType(move) >= kQueenPromotion) {
       RemovePiece(GetMoveDestination(move));
@@ -367,7 +368,8 @@ void Board::UnMake() {
   castling_rights = GetCastlingRights(info);
   switch(GetMoveType(move)) {
   case kEnPassant:
-    RemovePiece(GetMoveDestination(move) - 8 + (2*8) * turn);
+    AddPiece(GetMoveDestination(move) - 8 + (2*8) * turn, GetPiece(turn^0x1, kPawn));
+    break;
   case kCastle:
     if (GetMoveDestination(move) < GetMoveSource(move)) {
       //Queen-side castling
