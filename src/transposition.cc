@@ -42,13 +42,17 @@ void SaveEntry(HashType hash, Move best_move, Score score) {
   //read_write_lock.writeEnd();
 }
 
-    bool ValidateHash(Entry entry, HashType hash){
-      int64_t data = entry.best_move;
-      data <<=32;
-      data ^= entry.score;
-      data ^= hash;
-      return entry.hash == data;
-    }
+bool ValidateHash(Entry entry, HashType hash){
+  int64_t data = entry.best_move;
+  data <<=32;
+  data ^= entry.score;
+  data ^= hash;
+  return entry.hash == data;
+}
+
+void ClearTable() {
+  std::fill(table.begin(), table.end(), 0);
+}
 
 }
 

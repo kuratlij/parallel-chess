@@ -100,7 +100,7 @@ void Loop() {
       }
     }
     else if (Equals(command, "go")) {
-      Depth depth = 5;
+      Depth depth = 6;
       if (tokens.size() == index+2) {
         std::string arg = tokens[index++];
         depth = atoi(tokens[index++].c_str());

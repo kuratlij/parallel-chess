@@ -472,7 +472,15 @@ std::vector<Move> Board::GetMoves() {
       moves.emplace_back(GetMove(destination-7, destination, kCapture));
       bitops::PopLSB(nw_captures);
     }
-
+    BitBoard ep_bitboard = GetSquareBitBoard(en_passant);
+    BitBoard ep_captures = (bitops::SW(ep_bitboard) | bitops::SE(ep_bitboard))
+                         &  piece_bitboards[kWhite][kPawn];
+    while (ep_captures) {
+      BitBoard source = bitops::NumberOfTrailingZeros(
+          bitops::GetLSB(ep_captures));
+      moves.emplace_back(GetMove(source, en_passant, kEnPassant));
+      bitops::PopLSB(ep_captures);
+    }
   }
   else {
     BitBoard single_push = bitops::S(piece_bitboards[kBlack][kPawn])
@@ -505,6 +513,15 @@ std::vector<Move> Board::GetMoves() {
           bitops::GetLSB(nw_captures));
       moves.emplace_back(GetMove(destination+9, destination, kCapture));
       bitops::PopLSB(nw_captures);
+    }
+    BitBoard ep_bitboard = GetSquareBitBoard(en_passant);
+    BitBoard ep_captures = (bitops::NW(ep_bitboard) | bitops::NE(ep_bitboard))
+                         & piece_bitboards[kBlack][kPawn];
+    while (ep_captures) {
+      BitBoard source = bitops::NumberOfTrailingZeros(
+          bitops::GetLSB(ep_captures));
+      moves.emplace_back(GetMove(source, en_passant, kEnPassant));
+      bitops::PopLSB(ep_captures);
     }
   }
 
