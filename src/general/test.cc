@@ -39,6 +39,10 @@ void check_break(std::string foo){
   }
 }
 
+void fen(Board b, std::string fen_code, std::string turn, std::string castling_rights){
+  b.SetBoard(fen_code, turn, castling_rights);
+}
+
 void Test::run(int game_number, int search_depth){
 //    std::thread c1(check_break, "foo");
 //    depth = search_depth;

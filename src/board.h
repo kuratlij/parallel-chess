@@ -27,7 +27,8 @@ public:
   Board();
   //Sets the board to position defined by the argument FEN code.
   //Previous state information is reset.
-  void SetBoard(std::string fen_code);
+  void SetBoard(std::string fen_code, std::string turn, std::string castling_rights);
+  void evaluate_castling_rights(std::string fen_code);
   std::vector<Move> GetMoves();
   void Make(Move move);
   void UnMake();

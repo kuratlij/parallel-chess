@@ -82,6 +82,14 @@ void Loop() {
             arg = tokens[index++];
           }
         }
+        else if (Equals(arg, "fen")) {
+          if(index < tokens.size()+2) {
+            std::string fen_pos = tokens[index++];
+            std::string turn = tokens[index++];
+            std::string castling_rights = tokens[index++];
+            board.SetBoard(fen_pos, turn, castling_rights);
+          }
+        }
         if (Equals(arg, "moves")) {
           while (index < tokens.size()) {
             Move move = parse::StringToMove(tokens[index++]);
