@@ -670,7 +670,7 @@ std::vector<Move> Board::GetMoves() {
       UnMake();
     }
     if (add) {
-      if (GetPieceType(pieces[GetMoveDestination(move)]) == kPawn
+      if (GetPieceType(pieces[GetMoveSource(move)]) == kPawn
           && (GetSquareY(GetMoveDestination(move)) - 7*(turn^0x1)) == 0) {
         Square source = GetMoveSource(move);
         Square destination = GetMoveDestination(move);
