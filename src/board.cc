@@ -381,7 +381,7 @@ std::vector<Move> Board::GetMoves() {
   king &= ~own_pieces;
   AddMoves(moves, piece_bitboards[turn][kKing], king, enemy_pieces);
   BitBoard in_check = PlayerBitBoardControl(turn^0x1);
-  for (int right = 0 + 2*turn; right < 4-2*turn; right++) {
+  for (int right = 0 + 2*turn; right < 2+2*turn; right++) {
     if ((castling_rights & (0x1 << right))
         && !(castling_check_bbs[right] & in_check)
         && !(castling_empty_bbs[right] & (own_pieces | enemy_pieces))) {
