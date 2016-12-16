@@ -51,7 +51,7 @@ bool ValidateHash(Entry entry, HashType hash){
 }
 
 void ClearTable() {
-  std::fill(table.begin(), table.end(), 0);
+  //std::fill(table.begin(), table.end(), 0);
 }
 
 }
