@@ -90,17 +90,21 @@ void Loop() {
             board.SetBoard(fen_pos, turn, castling_rights);
           }
         }
-        if (Equals(arg, "moves")) {
-          while (index < tokens.size()) {
-            Move move = parse::StringToMove(tokens[index++]);
-            std::vector<Move> moves = board.GetMoves();
-            for (unsigned int i = 0; i < moves.size(); i++) {
-              if (GetMoveSource(moves[i]) == GetMoveSource(move)
-                  && GetMoveDestination(moves[i]) == GetMoveDestination(move)
-                  && (GetMoveType(moves[i]) < kQueenPromotion
-                      || GetMoveType(moves[i]) == GetMoveType(move))) {
-                board.Make(moves[i]);
-                break;
+        if (index < tokens.size()+1) {
+          arg = tokens[index++];
+          if(Equals(arg,"-")){arg = tokens[index++];}
+          if (Equals(arg, "moves")) {
+            while (index < tokens.size()) {
+              Move move = parse::StringToMove(tokens[index++]);
+              std::vector<Move> moves = board.GetMoves();
+              for (unsigned int i = 0; i < moves.size(); i++) {
+                if (GetMoveSource(moves[i]) == GetMoveSource(move)
+                    && GetMoveDestination(moves[i]) == GetMoveDestination(move)
+                    && (GetMoveType(moves[i]) < kQueenPromotion
+                        || GetMoveType(moves[i]) == GetMoveType(move))) {
+                  board.Make(moves[i]);
+                  break;
+                }
               }
             }
           }
