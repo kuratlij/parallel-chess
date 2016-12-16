@@ -11,8 +11,8 @@
 
 class Test{
 public:
-    Test();
-    void run(int game_number, int search_depth);
+  Test();
+  void run(int game_number, int search_depth);
   void check_break(std::string foo);
   void test_fens(int pieces, int moves, int depth);
 

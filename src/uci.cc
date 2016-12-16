@@ -78,9 +78,6 @@ void Loop() {
         std::string arg = tokens[index++];
         if (Equals(arg, "startpos")) {
           board.SetStartBoard();
-          if (index < tokens.size()) {
-            arg = tokens[index++];
-          }
         }
         else if (Equals(arg, "fen")) {
           if(index < tokens.size()+2) {
@@ -90,7 +87,7 @@ void Loop() {
             board.SetBoard(fen_pos, turn, castling_rights);
           }
         }
-        if (index < tokens.size()+1) {
+        if (index < tokens.size()) {
           arg = tokens[index++];
           if(Equals(arg,"-")){arg = tokens[index++];}
           if (Equals(arg, "moves")) {

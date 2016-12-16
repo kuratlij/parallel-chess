@@ -18,6 +18,7 @@
 #include "general/settings.h"
 #include "general/hash.h"
 #include "general/spin_lock.cc"
+#include "general/magic.h"
 
 
 #endif /* GENERAL_HEADERS_H_ */

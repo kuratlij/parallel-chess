@@ -8,7 +8,7 @@
 #include <thread>
 
 bool running = true;
-Depth depth = 6;
+Depth depth = 7;
 
 
 Test::Test(){
@@ -46,7 +46,7 @@ void fen(Board b, std::string fen_code, std::string turn, std::string castling_r
 void Test::test_fens(int pieces, int moves, int fens){
   //TODO: Set parameters here
   pieces = 16;
-  moves = 3;
+  moves = 1;
   fens = 5;
 
   std::string path = settings::get_eval_path() + std::to_string(pieces) + "_" + std::to_string(moves) + "_" + std::to_string(depth) + "_" + std::to_string(settings::get_run_parallel()) +  ".csv";
@@ -73,11 +73,11 @@ void Test::test_fens(int pieces, int moves, int fens){
       }else{
         running = false;
       }
-      if(board.GetMoves().size() > 0) {
+      /*if(board.GetMoves().size() > 0) {
         Move black_move = go(board, path);
       }else{
         running = false;
-      }
+      }*/
 
       cur_move++;
     }

@@ -13,6 +13,7 @@
 
 int main() {
   hash::initialize();
+  magic::Initialize();
   uci::Loop();
   debug::Print("Exiting Program", debug::kDebugMain);
   return 0;
