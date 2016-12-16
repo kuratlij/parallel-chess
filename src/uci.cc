@@ -82,6 +82,14 @@ void Loop() {
             arg = tokens[index++];
           }
         }
+        else if (Equals(arg, "fen")) {
+          if(index < tokens.size()+2) {
+            std::string fen_pos = tokens[index++];
+            std::string turn = tokens[index++];
+            std::string castling_rights = tokens[index++];
+            board.SetBoard(fen_pos, turn, castling_rights);
+          }
+        }
         if (Equals(arg, "moves")) {
           while (index < tokens.size()) {
             Move move = parse::StringToMove(tokens[index++]);
@@ -100,12 +108,19 @@ void Loop() {
       }
     }
     else if (Equals(command, "go")) {
-      Depth depth = 6;
+      Move move;
       if (tokens.size() == index+2) {
         std::string arg = tokens[index++];
-        depth = atoi(tokens[index++].c_str());
+        if(Equals(arg, "depth")){
+          Depth depth = atoi(tokens[index++].c_str());
+          move = search::DepthSearch(board, depth);
+        } else if(Equals(arg, "movetime")){
+          Milliseconds duration = Milliseconds(atoi(tokens[index++].c_str()));
+          move = search::TimeSearch(board, duration);
+        }
+      }else{
+        move = search::DepthSearch(board, 6);
       }
-      Move move = search::DepthSearch(board, depth);
       board.Make(move);
       std::cout << "bestmove " << parse::MoveToString(move) << std::endl;
     }

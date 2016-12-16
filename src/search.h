@@ -24,14 +24,17 @@ Move GetRandomMove(Board board);
 
 long Perft(Board board, Depth depth);
 Move DepthSearch(Board board, Depth depth);
+Move TimeSearch(Board board, Milliseconds depth);
     Move TestDepthSearch(Board board, Depth depth, std::string file_path);
-Move SequentialSearch(Board board, Depth depth);
+Move SequentialSearch(Board board, Depth depth, Time end_time);
 Move TestSequentialSearch(Board board, Depth depth, std::string file_path);
-Move ParallelSearch(Board board, Depth depth);
+Move ParallelSearch(Board board, Depth depth, Time end_time);
     Move TestParallelSearch(Board board, Depth depth, std::string file_path);
 bool depthPattern(Depth depth);
-Score AlphaBeta(Board board, Score alpha, Score beta, Depth depth);
-Score ParallelAlphaBeta(Board board, Score alpha, Score beta, Depth depth);
+bool finished(Time end_time);
+Score AlphaBeta(Board board, Score alpha, Score beta, Depth depth, Time end_time);
+Score ParallelAlphaBeta(Board board, Score alpha, Score beta, Depth depth, Time end_time);
+Time createEndTime();
 }
 
 #endif /* SEARCH_H_ */
