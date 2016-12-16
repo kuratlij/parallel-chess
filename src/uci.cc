@@ -100,12 +100,19 @@ void Loop() {
       }
     }
     else if (Equals(command, "go")) {
-      Depth depth = 6;
+      Move move;
       if (tokens.size() == index+2) {
         std::string arg = tokens[index++];
-        depth = atoi(tokens[index++].c_str());
+        if(Equals(arg, "depth")){
+          Depth depth = atoi(tokens[index++].c_str());
+          move = search::DepthSearch(board, depth);
+        } else if(Equals(arg, "movetime")){
+          Milliseconds duration = Milliseconds(atoi(tokens[index++].c_str()));
+          move = search::TimeSearch(board, duration);
+        }
+      }else{
+        move = search::DepthSearch(board, 6);
       }
-      Move move = search::DepthSearch(board, depth);
       board.Make(move);
       std::cout << "bestmove " << parse::MoveToString(move) << std::endl;
     }
