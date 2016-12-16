@@ -23,6 +23,7 @@ bool get_run_parallel();
 
 void set_eval_path(std::string path);
 std::string get_eval_path();
+std::string get_fen_path();
 }
 
 

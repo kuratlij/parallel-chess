@@ -60,6 +60,7 @@ private:
   //Ply refers to the number of played halfmoves
   int32_t made_plies;
   HashType hash;
+
 };
 
 #endif /* BOARD_H_ */
