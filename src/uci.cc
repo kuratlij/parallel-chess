@@ -89,7 +89,10 @@ void Loop() {
         }
         if (index < tokens.size()) {
           arg = tokens[index++];
-          if(Equals(arg,"-")){arg = tokens[index++];}
+          if (Equals(arg, "-")) {}
+        }
+        if (index < tokens.size()){
+          arg = tokens[index++];
           if (Equals(arg, "moves")) {
             while (index < tokens.size()) {
               Move move = parse::StringToMove(tokens[index++]);
