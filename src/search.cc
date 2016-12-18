@@ -207,7 +207,7 @@ Score ParallelAlphaBeta(Board board, Score alpha, Score beta, Depth depth, Time 
     if (settings::use_YBWC) {
       inc = 1;
     }
-    for (int i = omp_get_thread_num()+inc; i < private_moves.size(); i+=settings::num_threads) {
+    for (int i = omp_get_thread_num()+inc; i < private_moves.size(); i+=settings::get_num_threads()) {
       if (!go || finished(end_time)){
         break;//already found better score then beta, skip rest of computation
       }
@@ -218,7 +218,7 @@ Score ParallelAlphaBeta(Board board, Score alpha, Score beta, Depth depth, Time 
         privateAlpha = alpha;
       }
       Score score;
-      if ((i<settings::num_threads && !settings::use_YBWC) || is_null_window(privateAlpha, beta)) {
+      if ((i<settings::get_num_threads() && !settings::use_YBWC) || is_null_window(privateAlpha, beta)) {
         debug::SearchDebug("["+std::to_string(privateAlpha)+","+std::to_string(beta)+"] pt"+std::to_string(omp_get_thread_num()), depth);
         if (parallel_pattern(depth, privateAlpha, beta)) {
           score = -ParallelAlphaBeta(privateBoard, -beta, -privateAlpha, depth - 1, end_time);
