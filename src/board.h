@@ -30,6 +30,7 @@ public:
   void SetBoard(std::string fen_code, std::string turn, std::string castling_rights);
   void evaluate_castling_rights(std::string fen_code);
   std::vector<Move> GetMoves();
+  std::vector<Move> GetQuiescentMoves();
   void Make(Move move);
   void UnMake();
   void SetStartBoard();
@@ -37,6 +38,7 @@ public:
   //This needs to be public for the evaluation function.
   PieceBitboardSet get_piece_bitboards();
   Color get_turn();
+  int32_t get_num_made_moves();
   //Print unicode chess board.
   void Print();
   bool InCheck();

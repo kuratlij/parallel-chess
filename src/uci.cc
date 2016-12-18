@@ -87,12 +87,11 @@ void Loop() {
             board.SetBoard(fen_pos, turn, castling_rights);
           }
         }
-        if (index < tokens.size()) {
-          arg = tokens[index++];
-          if (Equals(arg, "-")) {}
-        }
         if (index < tokens.size()){
           arg = tokens[index++];
+          while (Equals(arg,"-") && index < tokens.size()) {
+            arg = tokens[index++];
+          }
           if (Equals(arg, "moves")) {
             while (index < tokens.size()) {
               Move move = parse::StringToMove(tokens[index++]);

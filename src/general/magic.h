@@ -19,6 +19,7 @@ void Initialize();
 template<PieceType pt>
 BitBoard GetAttackMap(const int &index, BitBoard AllPieces);
 BitBoard GetAttackVectors(BitBoard src, BitBoard des);
+BitBoard GetAttackMap(PieceType piece_type, Square square, BitBoard all_pieces);
 
 }
 

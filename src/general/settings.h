@@ -19,7 +19,8 @@ const bool alphaPropagation = false;
 const int alphaChange = 15;
 void set_run_parallel(bool parallel);
 bool get_run_parallel();
-
+const bool use_YBWC = true;
+const bool use_quiescent_search = true;
 void set_eval_path(std::string path);
 std::string get_eval_path();
 std::string get_fen_path();
