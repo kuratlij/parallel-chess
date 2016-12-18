@@ -8,7 +8,7 @@
 #include <thread>
 
 bool running = true;
-Depth depth = 7;
+Depth depth = 8;
 
 
 Test::Test(){
