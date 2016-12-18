@@ -415,7 +415,7 @@ Move ParallelSearch(Board board, Depth depth, Time end_time){
 
 bool parallel_pattern(Depth depth, Score alpha, Score beta){//still use false for sequential runs since there is a overhead in the parallel version
     //Don't parallelize in the starting depth
-    //return depth>4&&depth<starting_depth;
+    //return depth>4&&depth<starting_depth; l
     if(!parallel){
         return false;
     }
