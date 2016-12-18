@@ -720,7 +720,7 @@ bool Board::InCheck() {
     }
     p = piece_bitboards[turn^0x1][kKing];
     targeted = bitops::E(p) | p | bitops::W(p);
-    targeted |= bitops::N(targeted) | bitops::N(targeted);
+    targeted |= bitops::N(targeted) | bitops::S(targeted);
     p = piece_bitboards[turn^0x1][kPawn];
     targeted |= (bitops::SE(p) | bitops::SW(p)) << (16 * turn);
     targeted &= bitBoard;
