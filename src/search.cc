@@ -56,12 +56,43 @@ long Perft(Board board, Depth depth) {
   return perft_sum;
 }
 
+Score QuiescentSearch(Board board, Score alpha, Score beta) {
+  Score score = evaluation::ScoreBoard(board);
+  if (score >= beta) {
+    return beta;
+  }
+  if (score > alpha) {
+    alpha = score;
+  }
+  std::vector<Move> moves = board.GetQuiescentMoves();
+  table::Entry entry = table::GetEntry(board.get_hash());
+  if (table::ValidateHash(entry,board.get_hash())) {
+      std::sort(moves.begin(), moves.end(), Sorter(entry.best_move));
+  }
+  for (unsigned int i = 0; i < moves.size(); i++) {
+    Move move = moves[i];
+    board.Make(move);
+    score = -QuiescentSearch(board, -beta, -alpha);
+    board.UnMake();
+    if (score >= beta) {
+      return beta;
+    }
+    if (score > alpha) {
+      alpha = score;
+    }
+  }
+  return alpha;
+}
+
 Score AlphaBeta(Board board, Score alpha, Score beta, Depth depth, Time end_time) {
   if(finished(end_time)){
     return 0;
   }
   if (depth == 0) {
-      return evaluation::ScoreBoard(board);
+    if (settings::use_quiescent_search) {
+      return QuiescentSearch(board, alpha, beta);
+    }
+    return evaluation::ScoreBoard(board);
   }
   std::vector<Move> moves = board.GetMoves();
   if (moves.size() == 0) {
@@ -129,6 +160,9 @@ Score AlphaBeta(Board board, Score alpha, Score beta, Depth depth, Time end_time
 Score ParallelAlphaBeta(Board board, Score alpha, Score beta, Depth depth, Time end_time) {
   debug::SearchDebug("ps t"+std::to_string(omp_get_thread_num())+" "+std::to_string(alpha)+","+std::to_string(beta), depth);
   if (depth == 0) {
+    if (settings::use_quiescent_search) {
+      return QuiescentSearch(board, alpha, beta);
+    }
     return evaluation::ScoreBoard(board);
   }
   std::vector<Move> moves = board.GetMoves();
