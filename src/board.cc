@@ -666,6 +666,168 @@ std::vector<Move> Board::GetMoves() {
   return legal_moves;
 }
 
+std::vector<Move> Board::GetQuiescentMoves() {
+  std::vector<Move> moves;
+  BitBoard own_pieces = piece_bitboards[turn][kKing];
+  BitBoard enemy_pieces = piece_bitboards[turn^0x1][kKing];
+  for (PieceType piece_type = kQueen; piece_type <= kPawn; piece_type++) {
+    own_pieces |= piece_bitboards[turn][piece_type];
+    enemy_pieces |= piece_bitboards[turn^0x1][piece_type];
+  }
+  BitBoard empty = (~own_pieces) & (~enemy_pieces);
+  BitBoard all_pieces = ~empty;
+
+  //King
+  BitBoard king = piece_bitboards[turn][kKing];
+  king |= bitops::E(king) | bitops::W(king);
+  king |= bitops::N(king) | bitops::S(king);
+  king &= enemy_pieces;
+  AddMoves(moves, piece_bitboards[turn][kKing], king, enemy_pieces);
+
+  //Vertical/Horizontal Sliders
+  BitBoard vertical_movers = piece_bitboards[turn][kQueen]
+                           | piece_bitboards[turn][kRook];
+  while (vertical_movers) {
+    BitBoard mover = bitops::GetLSB(vertical_movers);
+    Square mover_square = bitops::NumberOfTrailingZeros(mover);
+    BitBoard destinations = magic::GetAttackMap<kRook>(mover_square, all_pieces);
+    destinations &= enemy_pieces;
+    AddMoves(moves, mover, destinations, enemy_pieces);
+    bitops::PopLSB(vertical_movers);
+  }
+
+  //Diagonal Sliders
+  BitBoard diagonal_movers = piece_bitboards[turn][kQueen]
+                           | piece_bitboards[turn][kBishop];
+  while (diagonal_movers) {
+    BitBoard mover = bitops::GetLSB(diagonal_movers);
+    Square mover_square = bitops::NumberOfTrailingZeros(mover);
+    BitBoard destinations = magic::GetAttackMap<kBishop>(mover_square, all_pieces);
+    destinations &= enemy_pieces;
+    AddMoves(moves, mover, destinations, enemy_pieces);
+    bitops::PopLSB(diagonal_movers);
+  }
+
+  //Knight moves
+  BitBoard knights = piece_bitboards[turn][kKnight];
+  while (knights) {
+    BitBoard knight = bitops::GetLSB(knights);
+    Square mover_square = bitops::NumberOfTrailingZeros(knight);
+    BitBoard destinations = magic::GetAttackMap<kKnight>(mover_square, all_pieces);
+    destinations &= enemy_pieces;
+    AddMoves(moves, knight, destinations, enemy_pieces);
+    bitops::PopLSB(knights);
+  }
+
+  //Pawns
+  if (turn == kWhite) {
+    BitBoard ne_captures = bitops::NE(piece_bitboards[kWhite][kPawn])
+                         & enemy_pieces;
+    while (ne_captures) {
+      BitBoard destination = bitops::NumberOfTrailingZeros(
+          bitops::GetLSB(ne_captures));
+      moves.emplace_back(GetMove(destination-9, destination, kCapture));
+      bitops::PopLSB(ne_captures);
+    }
+    BitBoard nw_captures = bitops::NW(piece_bitboards[kWhite][kPawn])
+                         & enemy_pieces;
+    while (nw_captures) {
+      BitBoard destination = bitops::NumberOfTrailingZeros(
+          bitops::GetLSB(nw_captures));
+      moves.emplace_back(GetMove(destination-7, destination, kCapture));
+      bitops::PopLSB(nw_captures);
+    }
+    BitBoard ep_bitboard = GetSquareBitBoard(en_passant);
+    BitBoard ep_captures = (bitops::SW(ep_bitboard) | bitops::SE(ep_bitboard))
+                         &  piece_bitboards[kWhite][kPawn];
+    while (ep_captures) {
+      BitBoard source = bitops::NumberOfTrailingZeros(
+          bitops::GetLSB(ep_captures));
+      moves.emplace_back(GetMove(source, en_passant, kEnPassant));
+      bitops::PopLSB(ep_captures);
+    }
+  }
+  else {
+    BitBoard se_captures = bitops::SE(piece_bitboards[kBlack][kPawn])
+                         & enemy_pieces;
+    while (se_captures) {
+      BitBoard destination = bitops::NumberOfTrailingZeros(
+          bitops::GetLSB(se_captures));
+      moves.emplace_back(GetMove(destination+7, destination, kCapture));
+      bitops::PopLSB(se_captures);
+    }
+    BitBoard sw_captures = bitops::SW(piece_bitboards[kBlack][kPawn])
+                         & enemy_pieces;
+    while (sw_captures) {
+      BitBoard destination = bitops::NumberOfTrailingZeros(
+          bitops::GetLSB(sw_captures));
+      moves.emplace_back(GetMove(destination+9, destination, kCapture));
+      bitops::PopLSB(sw_captures);
+    }
+    BitBoard ep_bitboard = GetSquareBitBoard(en_passant);
+    BitBoard ep_captures = (bitops::NW(ep_bitboard) | bitops::NE(ep_bitboard))
+                         & piece_bitboards[kBlack][kPawn];
+    while (ep_captures) {
+      BitBoard source = bitops::NumberOfTrailingZeros(
+          bitops::GetLSB(ep_captures));
+      moves.emplace_back(GetMove(source, en_passant, kEnPassant));
+      bitops::PopLSB(ep_captures);
+    }
+  }
+
+  //Now we need to remove illegal moves.
+  std::vector<Move> legal_moves;
+  Square king_source = bitops::NumberOfTrailingZeros(piece_bitboards[turn][kKing]);
+  BitBoard dangerous_sources = magic::GetAttackMap<kQueen>(king_source, all_pieces)
+      | piece_bitboards[turn][kKing];
+  BitBoard knight_attack = magic::GetAttackMap<kKnight>(king_source, all_pieces)
+      & piece_bitboards[turn^0x1][kKnight];
+  bool already_check = InCheck();
+  for (Move move : moves) {
+    BitBoard move_src = GetSquareBitBoard(GetMoveSource(move));
+    bool add = false;
+    if (!already_check) {
+      if (!knight_attack && !(dangerous_sources & move_src) && GetMoveType(move) != kEnPassant) {
+        add = true;
+      }
+      else {
+        Make(move);
+        SwapTurn();
+        if (!InCheck()) {
+          add = true;
+        }
+        SwapTurn();
+        UnMake();
+      }
+    }
+    else {
+      Make(move);
+      SwapTurn();
+      if (!InCheck()) {
+        add = true;
+      }
+      SwapTurn();
+      UnMake();
+    }
+    if (add) {
+      if (GetPieceType(pieces[GetMoveSource(move)]) == kPawn
+          && (GetSquareY(GetMoveDestination(move)) - 7*(turn^0x1)) == 0) {
+        Square source = GetMoveSource(move);
+        Square destination = GetMoveDestination(move);
+        for (MoveType move_type = kQueenPromotion; move_type <= kKnightPromotion; move_type++) {
+          legal_moves.emplace_back(GetMove(source, destination, move_type));
+        }
+      }
+      else {
+        legal_moves.emplace_back(move);
+      }
+    }
+
+  }
+  return legal_moves;
+}
+
+
 HashType Board::get_hash() {
   return hash;
 }
@@ -686,29 +848,29 @@ Color Board::get_turn() {
 }
 
 bool Board::InCheck() {
-    BitBoard bitBoard = piece_bitboards[turn][kKing];
-    BitBoard p, targeted;
-    BitBoard all_pieces = 0;
-    for (PieceType piece_type = kKing; piece_type <= kPawn; piece_type++) {
-      all_pieces |= piece_bitboards[turn][piece_type];
-      all_pieces |= piece_bitboards[turn^0x1][piece_type];
-    }
-    p = piece_bitboards[turn^0x1][kKing];
-    targeted = bitops::E(p) | p | bitops::W(p);
-    targeted |= bitops::N(targeted) | bitops::S(targeted);
-    p = piece_bitboards[turn^0x1][kPawn];
-    targeted |= (bitops::SE(p) | bitops::SW(p)) << (16 * turn);
-    targeted &= bitBoard;
+  BitBoard bitBoard = piece_bitboards[turn][kKing];
+  BitBoard p, targeted;
+  BitBoard all_pieces = 0;
+  for (PieceType piece_type = kKing; piece_type <= kPawn; piece_type++) {
+    all_pieces |= piece_bitboards[turn][piece_type];
+    all_pieces |= piece_bitboards[turn^0x1][piece_type];
+  }
+  p = piece_bitboards[turn^0x1][kKing];
+  targeted = bitops::E(p) | p | bitops::W(p);
+  targeted |= bitops::N(targeted) | bitops::S(targeted);
+  p = piece_bitboards[turn^0x1][kPawn];
+  targeted |= (bitops::SE(p) | bitops::SW(p)) << (16 * turn);
+  targeted &= bitBoard;
 
-    int index = bitops::NumberOfTrailingZeros(bitBoard);
-    targeted |= magic::GetAttackMap<kKnight>(index, 0)
-        & (piece_bitboards[turn^0x1][kKnight]);
-    targeted |= magic::GetAttackMap<kBishop>(index, all_pieces)
-        & (piece_bitboards[turn^0x1][kBishop] | piece_bitboards[turn^0x1][kQueen]);
-    targeted |= magic::GetAttackMap<kRook>(index, all_pieces)
-        & (piece_bitboards[turn^0x1][kRook] | piece_bitboards[turn^0x1][kQueen]);
+  int index = bitops::NumberOfTrailingZeros(bitBoard);
+  targeted |= magic::GetAttackMap<kKnight>(index, 0)
+      & (piece_bitboards[turn^0x1][kKnight]);
+  targeted |= magic::GetAttackMap<kBishop>(index, all_pieces)
+      & (piece_bitboards[turn^0x1][kBishop] | piece_bitboards[turn^0x1][kQueen]);
+  targeted |= magic::GetAttackMap<kRook>(index, all_pieces)
+      & (piece_bitboards[turn^0x1][kRook] | piece_bitboards[turn^0x1][kQueen]);
 
-    return targeted;
+  return targeted;
 }
 
 int32_t Board::get_num_made_moves() {

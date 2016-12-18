@@ -30,6 +30,7 @@ public:
   void SetBoard(std::string fen_code, std::string turn, std::string castling_rights);
   void evaluate_castling_rights(std::string fen_code);
   std::vector<Move> GetMoves();
+  std::vector<Move> GetQuiescentMoves();
   void Make(Move move);
   void UnMake();
   void SetStartBoard();
