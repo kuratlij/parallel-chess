@@ -30,7 +30,7 @@ Move SequentialSearch(Board board, Depth depth, Time end_time);
 Move TestSequentialSearch(Board board, Depth depth, std::string file_path);
 Move ParallelSearch(Board board, Depth depth, Time end_time);
     Move TestParallelSearch(Board board, Depth depth, std::string file_path);
-bool depthPattern(Depth depth);
+bool depthPattern(Depth depth, Score alpha, Score beta);
 bool finished(Time end_time);
 Score AlphaBeta(Board board, Score alpha, Score beta, Depth depth, Time end_time);
 Score ParallelAlphaBeta(Board board, Score alpha, Score beta, Depth depth, Time end_time);
