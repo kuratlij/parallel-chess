@@ -7,8 +7,6 @@
 #ifndef PARALLEL_CHESS_TEST_H
 #define PARALLEL_CHESS_TEST_H
 
-#endif //PARALLEL_CHESS_TEST_H
-
 class Test{
 public:
   Test();
@@ -18,5 +16,7 @@ public:
 
 
 private:
-Board board;//    Board whiteBoard;
+Board board;
 };
+
+#endif //PARALLEL_CHESS_TEST_H
