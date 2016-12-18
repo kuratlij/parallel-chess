@@ -145,34 +145,34 @@ Score ParallelAlphaBeta(Board board, Score alpha, Score beta, Depth depth, Time 
   bool go = true;
   omp_set_num_threads(settings::num_threads);
   omp_set_nested(1);
-#ifdef YBWC
-  Move first_move = moves[0];
-  Score first_alpha;
-  board.Make(first_move);
-  if(parallel_pattern(depth, alpha, beta)){
-    first_alpha = -ParallelAlphaBeta(board,-beta, -alpha, depth-1, end_time);
-  } else {
-    first_alpha = -AlphaBeta(board,-beta, -alpha, depth-1, end_time);
+  if (settings::use_YBWC) {
+    Move first_move = moves[0];
+    Score first_alpha;
+    board.Make(first_move);
+    if(parallel_pattern(depth, alpha, beta)){
+      first_alpha = -ParallelAlphaBeta(board,-beta, -alpha, depth-1, end_time);
+    } else {
+      first_alpha = -AlphaBeta(board,-beta, -alpha, depth-1, end_time);
+    }
+    board.UnMake();
+    if(first_alpha>=beta){
+      return beta;
+    }
+    if(alpha<first_alpha){
+      alpha=first_alpha;
+    }
   }
-  board.UnMake();
-  if(first_alpha>=beta){
-    return beta;
-  }
-  if(alpha<first_alpha){
-    alpha=first_alpha;
-  }
-#endif
 #pragma omp parallel
   {
     std::vector<Move> private_moves = moves;
     Score privateAlpha = alpha;
     Board privateBoard = board.copy();
     Move private_best_local_move = private_moves[0];
-#ifdef YBWC
-    for (int i = omp_get_thread_num()+1; i < private_moves.size(); i+=settings::num_threads) {
-#else
-    for (int i = omp_get_thread_num(); i < private_moves.size(); i+=settings::num_threads) {
-#endif
+    int inc = 0;
+    if (settings::use_YBWC) {
+      inc = 1;
+    }
+    for (int i = omp_get_thread_num()+inc; i < private_moves.size(); i+=settings::num_threads) {
       if (!go || finished(end_time)){
         break;//already found better score then beta, skip rest of computation
       }
@@ -183,12 +183,7 @@ Score ParallelAlphaBeta(Board board, Score alpha, Score beta, Depth depth, Time 
         privateAlpha = alpha;
       }
       Score score;
-#ifdef YBWC
-      if (is_null_window(privateAlpha, beta)) {
-#else
-        if (i<settings::num_threads && is_null_window(privateAlpha, beta)) {
-#endif
-
+      if ((i<settings::num_threads && !settings::use_YBWC) || is_null_window(privateAlpha, beta)) {
         debug::SearchDebug("["+std::to_string(privateAlpha)+","+std::to_string(beta)+"] pt"+std::to_string(omp_get_thread_num()), depth);
         if (parallel_pattern(depth, privateAlpha, beta)) {
           score = -ParallelAlphaBeta(privateBoard, -beta, -privateAlpha, depth - 1, end_time);
