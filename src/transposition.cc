@@ -51,7 +51,11 @@ bool ValidateHash(Entry entry, HashType hash){
 }
 
 void ClearTable() {
-
+  for (unsigned int i = 0; i < table.size(); i++) {
+    table[i].hash = 0;
+    table[i].best_move = 0;
+    table[i].score = 0;
+  }
 }
 
 }
