@@ -12,7 +12,8 @@ namespace {
 int kSign[2] = {1,-1};
 const Score kBaseCentipawnValues[6] = {0, 960, 480, 310, 300, 100};
 const Score kActivityBonus[6] = {0, 1, 4, 5, 10, 0};
-
+const Score kPawnPushBonus = 3;
+const Score kDoublePawnPenalty = -30;
 }
 
 namespace evaluation {
@@ -42,9 +43,15 @@ Score ScoreBoard(Board board) {
         bitops::PopLSB(pieces);
       }
     }
-
-
   }
+  BitBoard s_filled = bitops::FillSouth(set.piece_bitboards[kWhite][kPawn], ~0);
+  score += kSign[kWhite] * bitops::PopCount(s_filled) * kPawnPushBonus;
+  score += kSign[kWhite] * bitops::PopCount(s_filled & set.piece_bitboards[kWhite][kPawn])
+      * kDoublePawnPenalty;
+  BitBoard n_filled = bitops::FillNorth(set.piece_bitboards[kBlack][kPawn], ~0);
+  score += kSign[kBlack] * bitops::PopCount(n_filled) * kPawnPushBonus;
+  score += kSign[kBlack] * bitops::PopCount(n_filled & set.piece_bitboards[kBlack][kPawn])
+      * kDoublePawnPenalty;
 
 
   if (board.get_turn() == kWhite) {
