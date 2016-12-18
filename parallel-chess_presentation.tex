@@ -1,0 +1,94 @@
+\documentclass{beamer}
+\usepackage{svg}
+
+\title{Design of a Parallel Chess Engine}
+\author{Jonas Kuratli, Jonathan Maurer, Jonathan Rosenthal}
+\begin{document}
+\frame{\titlepage}
+
+\begin{frame}
+\frametitle{Project Details}
+\begin{itemize}
+\item UCI Compatible Engine
+\item Parallel Alpha-Beta search with minimal extensions
+\item Primitive evaluation function
+\item Parallel Transposition table
+\pause
+\item Results
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{UCI Engine}
+\begin{itemize}
+\item Fully functioning chess engine with using magic bitboards for move generation
+\item UCI protocol implemented with some extensions
+\begin{itemize}
+\item Perft
+\end{itemize}
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Alpha-Beta Design Decisions}
+\begin{itemize}
+\item Principle Variation Splitting
+\item Quiescent Search
+\item Guarantee equivalence to mini-max
+\begin{itemize}
+\item Restricted from using LMR, Null Move Pruning, Razoring, Check Extensions, etc...
+\end{itemize}
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Parallel Alpha-Beta}
+\begin{itemize}
+\item Implemented some of our own ideas
+\begin{itemize}
+\item Eg only parallelizing null windows to minimize necessary interaction between threads
+\end{itemize}
+\item Implemented two state of the art approaches
+\begin{itemize}
+\item YBWC
+\item Lazy SMP
+\end{itemize}
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Evaluation Function}
+\begin{itemize}
+\item Very simple
+\begin{itemize}
+\item Too simple
+\end{itemize}
+\item Inherent piece values
+\item Activity boni
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Parallel Transposition Table}
+\begin{itemize}
+\item Spinlocks
+\item Read Write Locks
+\item Lockless
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Results}
+\begin{itemize}
+\item As expected problem is hard to parallelize
+\item Testing is in progress
+\end{itemize}
+\end{frame}
+
+%\begin{frame}
+%\frametitle{Alpha Beta Pruning}
+%\includegraphics[scale=0.32]{AB_pruning}
+%\footnote{By Jez9999 at the English language Wikipedia, CC BY-SA 3.0, https://commons.wikimedia.org/w/%index.php?curid=3708424}
+%\end{frame}
+
+\end{document}
