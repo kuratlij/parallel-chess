@@ -266,6 +266,7 @@ void Board::SetStartBoard() {
 
 void Board::SetToSamePosition(Board &board) {
   hash = board.hash;
+  made_plies = board.made_plies;
   en_passant = board.en_passant;
   for (int player = kWhite; player <= kBlack; player++) {
     for (int piece_type = 0; piece_type < kNumPieceTypes; piece_type++) {
@@ -353,11 +354,13 @@ void Board::Make(Move move) {
   }
   move_history_information.emplace_back(information);
   move_history.emplace_back(move);
+  made_plies++;
   SwapTurn();
 }
 
 void Board::UnMake() {
   SwapTurn();
+  made_plies--;
   Move move = move_history.back();
   move_history.pop_back();
   MoveHistoryInformation info = move_history_information.back();
@@ -734,6 +737,10 @@ bool Board::InCheck() {
         & (piece_bitboards[turn^0x1][kRook] | piece_bitboards[turn^0x1][kQueen]);
 
     return targeted;
+}
+
+int32_t Board::get_num_made_moves() {
+  return made_plies;
 }
 
 Board Board::copy() {

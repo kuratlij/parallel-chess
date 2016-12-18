@@ -37,6 +37,7 @@ public:
   //This needs to be public for the evaluation function.
   PieceBitboardSet get_piece_bitboards();
   Color get_turn();
+  int32_t get_num_made_moves();
   //Print unicode chess board.
   void Print();
   bool InCheck();
