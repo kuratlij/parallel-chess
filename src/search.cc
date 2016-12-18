@@ -85,7 +85,7 @@ Score AlphaBeta(Board board, Score alpha, Score beta, Depth depth, Time end_time
     Score score;
     if (i == 0 || (is_null_window(alpha, beta))) {
       debug::SearchDebug("["+std::to_string(alpha)+","+std::to_string(beta)+"] t"+std::to_string(omp_get_thread_num()), depth);
-      if(depthPattern(depth, alpha, beta)){
+      if(parallel_pattern(depth, alpha, beta)){
         score = -ParallelAlphaBeta(board, -beta, -alpha, depth - 1, end_time);
       }
       else{
@@ -94,7 +94,7 @@ Score AlphaBeta(Board board, Score alpha, Score beta, Depth depth, Time end_time
     }
     else {
       debug::SearchDebug("["+std::to_string(alpha)+","+std::to_string(alpha+1)+"] t"+std::to_string(omp_get_thread_num()), depth);
-      if(depthPattern(depth, alpha, beta)){
+      if(parallel_pattern(depth, alpha, beta)){
         score = -ParallelAlphaBeta(board, -(alpha+1), -alpha, depth - 1, end_time);
         if (score >= (alpha+1)) {
           debug::SearchDebug("["+std::to_string(alpha)+","+std::to_string(beta)+"] t"+std::to_string(omp_get_thread_num()), depth);
@@ -163,7 +163,7 @@ Score ParallelAlphaBeta(Board board, Score alpha, Score beta, Depth depth, Time 
     Score score;
     if (i < settings::num_threads || (is_null_window(privateAlpha, beta))) {
       debug::SearchDebug("["+std::to_string(privateAlpha)+","+std::to_string(beta)+"] pt"+std::to_string(omp_get_thread_num()), depth);
-      if (depthPattern(depth, privateAlpha, beta)) {
+      if (parallel_pattern(depth, privateAlpha, beta)) {
         score = -ParallelAlphaBeta(privateBoard, -beta, -privateAlpha, depth - 1, end_time);
       }
       else {
@@ -172,7 +172,7 @@ Score ParallelAlphaBeta(Board board, Score alpha, Score beta, Depth depth, Time 
     }
     else {
       debug::SearchDebug("["+std::to_string(privateAlpha)+","+std::to_string(privateAlpha+1)+"] pt"+std::to_string(omp_get_thread_num()), depth);
-      if(depthPattern(depth, privateAlpha, beta)){
+      if(parallel_pattern(depth, privateAlpha, beta)){
         score = -ParallelAlphaBeta(privateBoard, -(privateAlpha+1), -privateAlpha, depth - 1, end_time);
         if (score >= (privateAlpha+1)) {
           debug::SearchDebug("["+std::to_string(privateAlpha)+","+std::to_string(beta)+"] pt"+std::to_string(omp_get_thread_num()), depth);
@@ -413,8 +413,7 @@ Move ParallelSearch(Board board, Depth depth, Time end_time){
     }
 
 
-bool depthPattern(Depth depth, Score alpha, Score beta){//still use false for sequential runs since there is a overhead in the parallel version
-    //Todo maybe just define a 2-D array with depth and starting_depth coordinates
+bool parallel_pattern(Depth depth, Score alpha, Score beta){//still use false for sequential runs since there is a overhead in the parallel version
     //Don't parallelize in the starting depth
     //return depth>4&&depth<starting_depth;
     if(!parallel){
