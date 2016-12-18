@@ -66,7 +66,7 @@ Score AlphaBeta(Board board, Score alpha, Score beta, Depth depth, Time end_time
   std::vector<Move> moves = board.GetMoves();
   if (moves.size() == 0) {
       if (board.InCheck()) {
-          return kMinScore;
+          return kMinScore+board.get_num_made_moves();
       }
       return 0;
   }
@@ -133,7 +133,7 @@ Score ParallelAlphaBeta(Board board, Score alpha, Score beta, Depth depth, Time 
   std::vector<Move> moves = board.GetMoves();
   if (moves.size() == 0) {
     if (board.InCheck()) {
-      return kMinScore;
+      return kMinScore+board.get_num_made_moves();
     }
     return 0;
   }
