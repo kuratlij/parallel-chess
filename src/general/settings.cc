@@ -10,6 +10,7 @@
 
 namespace {
 
+int num_threads = 2;
 bool run_parallel = true;
 std::string eval_path = "./chess_eval/";
 std::string fen_path = "./fens/";
@@ -35,5 +36,12 @@ void set_eval_path(std::string path){
 }
 std::string get_eval_path() {
   return eval_path;
+}
+
+void set_num_threads(int num){
+  num_threads = num;
+}
+int get_num_threads(){
+  return num_threads;
 }
 }

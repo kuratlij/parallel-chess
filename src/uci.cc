@@ -149,10 +149,15 @@ void Loop() {
     else if (Equals(command, "testplay")) {
         int run_parallel = atoi(tokens[index++].c_str());
         settings::set_run_parallel(run_parallel == 1);
-        int game_nr = atoi(tokens[index++].c_str());
+        int game_nr_or_fens = atoi(tokens[index++].c_str());
+      int desired_depth = -1;
+        if(tokens.size() > 2){
+          desired_depth = atoi(tokens[index++].c_str());
+        }
         Test test;
 //        test.run(game_nr, 5);
-        test.test_fens(16,5,1);
+//        test.test_fens(16,5,game_nr_or_fens, desired_depth);
+      test.big_test(1, game_nr_or_fens, desired_depth);
     }
     else {
       Reply("Received unknown command: " + command);

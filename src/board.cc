@@ -214,7 +214,7 @@ void Board::SetBoard(std::string fen_code, std::string player_turn, std::string 
 }
 
 void Board::evaluate_castling_rights(std::string fen_code){
-  std::cout << "Castling rights " << fen_code << std::endl;
+//  std::cout << "Castling rights " << fen_code << std::endl;
 
   castling_rights = 0;
 

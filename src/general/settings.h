@@ -15,7 +15,6 @@ namespace settings {
 const std::string engine_name = "DPHPC Engine";
 const std::string engine_version = "Alpha 0.1";
 const std::string engine_author = "Jonas Kuratli, Jonathan Maurer and Jonathan Rosenthal";
-const int num_threads = 2;
 const bool alphaPropagation = false;
 const int alphaChange = 15;
 void set_run_parallel(bool parallel);
@@ -24,6 +23,8 @@ bool get_run_parallel();
 void set_eval_path(std::string path);
 std::string get_eval_path();
 std::string get_fen_path();
+void set_num_threads(int num);
+int get_num_threads();
 }
 
 
