@@ -156,10 +156,12 @@ Score AlphaBeta(Board board, Score alpha, Score beta, Depth depth, Time end_time
   return alpha;
 }
 
+Depth starting_depth;
+
 static int get_num_threads(int num, int d){
   int rest_threads = num;
   int num_threads = 1;
-  for(int i = 2; i<d; i++){
+  for(int i = starting_depth-1; i>d; i--){
     if(rest_threads == 6){
       num_threads = 3;
       rest_threads = 2;
@@ -327,6 +329,8 @@ Move TestDepthSearch(Board board, Depth depth, std::string file_path, int thds) 
   return TestSequentialSearch(board, depth, file_path);
 }
 
+
+
     Move SequentialSearch(Board board, Depth depth, Time end_time){
       // Measure complete search time
         parallel = false;
@@ -404,7 +408,6 @@ Move TestSequentialSearch(Board board, Depth depth, std::string file_path){
   return best_move;
 }
 
-Depth starting_depth;
 
 inline Time createEndTime() { return now()+std::chrono::hours(24); }
 
