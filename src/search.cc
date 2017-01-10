@@ -156,6 +156,23 @@ Score AlphaBeta(Board board, Score alpha, Score beta, Depth depth, Time end_time
   return alpha;
 }
 
+int get_num_threads(int num, int d){
+  int rest_threads = num;
+  int num_threads = 1;
+  for(int i = 2; i<d; i++){
+    if(rest_threads == 6){
+      num_threads = 3;
+      rest_threads = 2;
+    }else if(rest_threads > 4){
+      num_threads = 4;
+      rest_threads /= 4;
+    }else{
+      num_threads = rest_threads;
+      rest_threads = 1;
+    }
+  }
+  return num_threads;
+}
 
 Score ParallelAlphaBeta(Board board, Score alpha, Score beta, Depth depth, Time end_time) {
   debug::SearchDebug("ps t"+std::to_string(omp_get_thread_num())+" "+std::to_string(alpha)+","+std::to_string(beta), depth);
@@ -177,7 +194,8 @@ Score ParallelAlphaBeta(Board board, Score alpha, Score beta, Depth depth, Time 
     std::sort(moves.begin(), moves.end(), Sorter(entry.best_move));
   }
   bool go = true;
-  omp_set_num_threads(settings::get_num_threads());
+  int threads = get_num_threads(settings::get_num_threads(), depth);
+  omp_set_num_threads(threads);
   omp_set_nested(1);
   if (settings::use_YBWC) {
     Move first_move = moves[0];
@@ -207,7 +225,7 @@ Score ParallelAlphaBeta(Board board, Score alpha, Score beta, Depth depth, Time 
     if (settings::use_YBWC) {
       inc = 1;
     }
-    for (int i = omp_get_thread_num()+inc; i < private_moves.size(); i+=settings::get_num_threads()) {
+    for (int i = omp_get_thread_num()+inc; i < private_moves.size(); i+=threads) {
       if (!go || finished(end_time)){
         break;//already found better score then beta, skip rest of computation
       }
@@ -218,7 +236,7 @@ Score ParallelAlphaBeta(Board board, Score alpha, Score beta, Depth depth, Time 
         privateAlpha = alpha;
       }
       Score score;
-      if ((i<settings::get_num_threads() && !settings::use_YBWC) || is_null_window(privateAlpha, beta)) {
+      if ((i<threads && !settings::use_YBWC) || is_null_window(privateAlpha, beta)) {
         debug::SearchDebug("["+std::to_string(privateAlpha)+","+std::to_string(beta)+"] pt"+std::to_string(omp_get_thread_num()), depth);
         if (parallel_pattern(depth, privateAlpha, beta)) {
           score = -ParallelAlphaBeta(privateBoard, -beta, -privateAlpha, depth - 1, end_time);
