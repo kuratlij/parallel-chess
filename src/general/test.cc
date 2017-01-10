@@ -90,6 +90,7 @@ void Test::test_fens(int pieces, int moves, int fens, int d_depth){
 //  std::cout << settings::get_fen_path() + "random_fens_" + std::to_string(pieces) << std::endl;
   std::string fen, turn, castling, enpassant, foo, bar;
   for(int i = 0; i < fens; i++){
+    table::ClearTable();
     // Load fen position
     infile >> fen >> turn >> castling >> enpassant >> foo >> bar;
 //    std::cout << fen << std::endl;
@@ -98,6 +99,7 @@ void Test::test_fens(int pieces, int moves, int fens, int d_depth){
 
 
     int cur_move = 0;
+    running = true;
     while(running && cur_move < moves){
       if(board.GetMoves().size() > 0) {
         Move white_move = go(board, path, d_depth, thds);

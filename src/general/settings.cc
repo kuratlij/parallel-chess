@@ -10,10 +10,10 @@
 
 namespace {
 
-int num_threads = 2;
+int num_threads=96;
 bool run_parallel = true;
-std::string eval_path = "./chess_eval/";
-std::string fen_path = "./fens/";
+std::string eval_path = "../chess_eval/";
+std::string fen_path = "../fens/";
 
 
 }

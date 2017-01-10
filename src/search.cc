@@ -156,19 +156,21 @@ Score AlphaBeta(Board board, Score alpha, Score beta, Depth depth, Time end_time
   return alpha;
 }
 
-int get_num_threads(int num, int d){
+static int get_num_threads(int num, int d){
   int rest_threads = num;
   int num_threads = 1;
   for(int i = 2; i<d; i++){
     if(rest_threads == 6){
       num_threads = 3;
       rest_threads = 2;
-    }else if(rest_threads > 4){
-      num_threads = 4;
-      rest_threads /= 4;
-    }else{
-      num_threads = rest_threads;
-      rest_threads = 1;
+    }else {
+      if (rest_threads > 4) {
+        num_threads = 4;
+        rest_threads /= 4;
+      } else {
+        num_threads = rest_threads;
+        rest_threads = 1;
+      }
     }
   }
   return num_threads;
@@ -195,8 +197,8 @@ Score ParallelAlphaBeta(Board board, Score alpha, Score beta, Depth depth, Time 
   }
   bool go = true;
   int threads = get_num_threads(settings::get_num_threads(), depth);
-  omp_set_num_threads(threads);
   omp_set_nested(1);
+  omp_set_num_threads(threads);
   if (settings::use_YBWC) {
     Move first_move = moves[0];
     Score first_alpha;
@@ -216,7 +218,6 @@ Score ParallelAlphaBeta(Board board, Score alpha, Score beta, Depth depth, Time 
   }
 #pragma omp parallel
   {
-
     std::vector<Move> private_moves = moves;
     Score privateAlpha = alpha;
     Board privateBoard = board.copy();
@@ -349,9 +350,9 @@ Move TestDepthSearch(Board board, Depth depth, std::string file_path, int thds) 
         //    file.open("/home/jonas/parallel-log.txt");
         //    file << "Move: " << parse::MoveToString(best_move) << std::endl;
         //    file.close();
-//        std::cout << "info " << "cp " << score << " pv "
-//                  << parse::MoveToString(best_move) << std::endl;
-//        std::cout << "Elapsed time (depth " << current_depth << "): " << elapsed_secs.count() << std::endl;
+        std::cout << "info " << "cp " << score << " pv "
+                  << parse::MoveToString(best_move) << std::endl;
+        std::cout << "Elapsed time (depth " << current_depth << "): " << elapsed_secs.count() << std::endl;
       }
 
       // Print elapsed search time
@@ -494,7 +495,8 @@ bool parallel_pattern(Depth depth, Score alpha, Score beta){//still use false fo
     if(!parallel){
         return false;
     }
-    return 5 == depth;// && depth < starting_depth && is_null_window(alpha, beta);//false;//starting_depth
+  //return depth ==6;
+    return (2 < depth) && (depth < starting_depth);// && is_null_window(alpha, beta);//false;//starting_depth
 }
 
 }
