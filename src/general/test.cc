@@ -44,21 +44,23 @@ void fen(Board b, std::string fen_code, std::string turn, std::string castling_r
 }
 
 void Test::big_test(int moves, int fens, int d_depth){
-  int threads[] = {1,2,4,8,12,16,24,32,64,96};
-  for(int pieces = 4; pieces <= 20; pieces += 8){
+//  int threads[] = {1,2,4,8,12,16,24,32,64,96};
+  int threads[] = {1,2,4,8,16,32,64,128,256};
+  for(int pieces = 16; pieces <= 20; pieces += 8){
     if(pieces == 36){
       pieces = 32;
     }
     for (int d = 4; d <= d_depth; d++) {
       int start_ts = 0;
       if(d == 6){
-        start_ts = 1;
+        start_ts = 0;
       }if(d == 7){
         start_ts = 3;
       }if(d == 8){
         start_ts = 7;
       }
-      for(int ts = start_ts; ts < 10; ts++) {
+      start_ts = 5;
+      for(int ts = start_ts; ts < 7; ts++) {
 
         int ts_for_test = threads[ts];
         settings::set_num_threads(ts_for_test);
@@ -80,7 +82,7 @@ void Test::test_fens(int pieces, int moves, int fens, int d_depth){
   moves = 1;
 //  fens = 100;
 
-  std::string path = settings::get_eval_path() + std::to_string(pieces) + "_" + std::to_string(d_depth) + "_" + std::to_string(settings::get_run_parallel()) +  ".csv";
+  std::string path = settings::get_eval_path() + std::to_string(pieces) + "__" + std::to_string(d_depth) + "_" + std::to_string(settings::get_run_parallel()) +  ".csv";
 
   // Delete existing file
 //  remove(path.c_str());
@@ -136,7 +138,7 @@ void Test::test_fens(int pieces, int moves, int fens, int d_depth){
   std::ofstream csv;
   csv.open(path, std::ofstream::app);
   std::cout << total_time << " " << total_moves << " " << d_depth <<  " " << thds << std::endl;
-  csv << "Avg time," << std::to_string(total_time / (1.0 * total_moves)) << "," << depth << ";" << std::endl;
+  csv << "Avg time," << std::to_string(total_time / (1.0 * total_moves)) << "," << thds << ";" << std::endl;
   csv.flush();
   csv.close();
 

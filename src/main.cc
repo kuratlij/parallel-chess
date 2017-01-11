@@ -16,7 +16,7 @@ int main() {
   hash::initialize();
   magic::Initialize();
   Test test;
-  int game_nr_or_fens = 5;
+  int game_nr_or_fens = 16;
   int desired_depth = 8;
   test.big_test(1, game_nr_or_fens, desired_depth);
 //  uci::Loop();

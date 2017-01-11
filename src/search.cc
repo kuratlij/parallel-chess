@@ -476,7 +476,7 @@ bool parallel_pattern(Depth depth, Score alpha, Score beta){//still use false fo
     if(!parallel){
         return false;
     }
-    return 5 == depth;// && depth < starting_depth && is_null_window(alpha, beta);//false;//starting_depth
+    return (5 == depth);// && depth < starting_depth && is_null_window(alpha, beta);//false;//starting_depth
 }
 
 }
