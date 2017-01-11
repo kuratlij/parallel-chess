@@ -152,7 +152,7 @@ Score AlphaBeta(Board board, Score alpha, Score beta, Depth depth, Time end_time
 
 Depth starting_depth;
 
-static int get_num_threads(int num, int d){
+int get_num_threads(int num, int d){
   int rest_threads = num;
   int num_threads = 1;
   for(int i = starting_depth-1; i>d; i--){
