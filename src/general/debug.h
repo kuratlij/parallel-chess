@@ -25,13 +25,13 @@ const bool kDebugEvaluation = true;
  * Prints a command line string if condition is met. By default there
  * is an incrementing counter used to tag messages.
  */
-void Print(const std::string message, const bool condition = true,
+/*void Print(const std::string message, const bool condition = true,
     const std::string tag = "");
 
 
 void Error(const std::string message, bool exit=true);
 
-void SearchDebug(std::string message, int depth);
+void SearchDebug(std::string message, int depth);*/
 
 
 }

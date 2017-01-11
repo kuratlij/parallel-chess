@@ -104,7 +104,6 @@ void PrintStandardRow(std::string first_delim, std::string mid_delim, std::strin
 
 Board::Board() {
   hash = 0;
-  made_plies = 0;
   en_passant = 0;
   for (int player = kWhite; player <= kBlack; player++) {
     for (int piece_type = 0; piece_type < kNumPieceTypes; piece_type++) {
@@ -130,12 +129,10 @@ Board::Board() {
   }
   castling_rights = 15;
   turn = kWhite;
-  debug::Print("constructed board", debug::kDebugBoard);
 }
 
 void Board::SetBoard(std::string fen_code, std::string player_turn, std::string castling_rights_str){
   hash = 0;
-  made_plies = 0;
   en_passant = 0;
 
 
@@ -235,7 +232,6 @@ void Board::evaluate_castling_rights(std::string fen_code){
 
 void Board::SetStartBoard() {
   hash = 0;
-  made_plies = 0;
   en_passant = 0;
   for (int player = kWhite; player <= kBlack; player++) {
     for (int piece_type = 0; piece_type < kNumPieceTypes; piece_type++) {
@@ -261,12 +257,10 @@ void Board::SetStartBoard() {
   }
   castling_rights = 15;
   turn = kWhite;
-  debug::Print("set starting position", debug::kDebugBoard);
 }
 
 void Board::SetToSamePosition(Board &board) {
   hash = board.hash;
-  made_plies = board.made_plies;
   en_passant = board.en_passant;
   for (int player = kWhite; player <= kBlack; player++) {
     for (int piece_type = 0; piece_type < kNumPieceTypes; piece_type++) {
@@ -298,10 +292,6 @@ Piece Board::RemovePiece(Square square) {
 Piece Board::MovePiece(Square source, Square destination) {
   Piece piece = RemovePiece(destination);
   AddPiece(destination, RemovePiece(source));
-  if (debug::kDebugBoard) {
-    debug::Print("moved piece from " + parse::SquareToString(source)
-        + " to " + parse::SquareToString(destination));
-  }
   return piece;
 }
 
@@ -354,13 +344,11 @@ void Board::Make(Move move) {
   }
   move_history_information.emplace_back(information);
   move_history.emplace_back(move);
-  made_plies++;
   SwapTurn();
 }
 
 void Board::UnMake() {
   SwapTurn();
-  made_plies--;
   Move move = move_history.back();
   move_history.pop_back();
   MoveHistoryInformation info = move_history_information.back();
@@ -468,6 +456,7 @@ BitBoard Board::PlayerBitBoardControl(Color color) {
 
 std::vector<Move> Board::GetMoves() {
   std::vector<Move> moves;
+  moves.reserve(40);
   BitBoard own_pieces = piece_bitboards[turn][kKing];
   BitBoard enemy_pieces = piece_bitboards[turn^0x1][kKing];
   for (PieceType piece_type = kQueen; piece_type <= kPawn; piece_type++) {
@@ -626,6 +615,7 @@ std::vector<Move> Board::GetMoves() {
 
   //Now we need to remove illegal moves.
   std::vector<Move> legal_moves;
+  legal_moves.reserve(moves.size());
   Square king_source = bitops::NumberOfTrailingZeros(piece_bitboards[turn][kKing]);
   BitBoard dangerous_sources = magic::GetAttackMap<kQueen>(king_source, all_pieces)
       | piece_bitboards[turn][kKing];
@@ -678,6 +668,7 @@ std::vector<Move> Board::GetMoves() {
 
 std::vector<Move> Board::GetQuiescentMoves() {
   std::vector<Move> moves;
+  moves.reserve(10);
   BitBoard own_pieces = piece_bitboards[turn][kKing];
   BitBoard enemy_pieces = piece_bitboards[turn^0x1][kKing];
   for (PieceType piece_type = kQueen; piece_type <= kPawn; piece_type++) {
@@ -893,7 +884,7 @@ bool Board::InCheck() {
 }
 
 int32_t Board::get_num_made_moves() {
-  return made_plies;
+  return move_history.size();
 }
 
 Board Board::copy() {

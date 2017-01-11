@@ -88,8 +88,8 @@ Move StringToMove(std::string move) {
       return GetMove(source, destination, kQueenPromotion + i);
     }
   }
-  debug::Error("illegal promotion piece string! Parsed move length: "
-      + std::to_string(move.size()) +" Parsed move: " + move);
+  //debug::Error("illegal promotion piece string! Parsed move length: "
+  //    + std::to_string(move.size()) +" Parsed move: " + move);
   return 0;
 }
 
