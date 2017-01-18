@@ -16,10 +16,21 @@ int main() {
   hash::initialize();
   magic::Initialize();
   Test test;
-  int game_nr_or_fens = 16;
+  // Set parameters
+  // Amount of random settings that will be evaluated for different number of threads
+  int amount_of_settings = 16;
+
+  // The depth that is searched
   int desired_depth = 8;
-  test.big_test(1, game_nr_or_fens, desired_depth);
-//  uci::Loop();
+
+  // Amount of moves that are searched per setting
+  int moves_per_setting = 1;
+
+  // Set to false to run sequential version
+
+  // Run the test
+  test.big_test(moves_per_setting, amount_of_settings, desired_depth, false);
+  //uci::Loop();
 //  debug::Print("Exiting Program", debug::kDebugMain);
   return 0;
 }

@@ -59,14 +59,46 @@ void Test::big_test(int moves, int fens, int d_depth){
       }if(d == 8){
         start_ts = 7;
       }
-      start_ts = 5;
-      for(int ts = start_ts; ts < 7; ts++) {
+      start_ts = 0;
+      for(int ts = start_ts; ts < 9; ts++) {
 
         int ts_for_test = threads[ts];
         settings::set_num_threads(ts_for_test);
         test_fens(pieces, ts_for_test, fens, d);
+
+        // Collect all averages in single file
+        std::string path = settings::get_eval_path() + std::to_string(settings::get_num_threads()) + "__" + std::to_string(d) + "_" + std::to_string(settings::get_run_parallel()) +  ".csv";
+        std::cout << path << std::endl;
+        std::string out_path = settings::get_eval_path() + "AVG" + std::to_string(d) + "_" + std::to_string(fens) + ".csv";
+        std::ifstream infile(path);
+
+        std::ofstream csv;
+        csv.open(out_path, std::ofstream::app);
+
+        // Find the row with the avg time
+        std::string line,time;
+        while(infile >> line) {
+//          std::cout << first << std::endl;
+
+          if (line.find("Avg") != std::string::npos) {
+            std::cout << "found";
+            int pos = 0;
+            pos = line.find(","); // Move string, not needed
+            line.erase(0, pos + 1);
+            pos = line.find(","); // Time string, needed
+            time = line.substr(0, pos);
+            // Found row, time contains avg time over all fens for current parameters
+            csv << ts_for_test << "," << time << ";" << std::endl;
+            break;
+          }
+        }
+        csv.flush();
+        csv.close();
       }
     }
+
+
+
   }
 }
 
@@ -82,7 +114,7 @@ void Test::test_fens(int pieces, int moves, int fens, int d_depth){
   moves = 1;
 //  fens = 100;
 
-  std::string path = settings::get_eval_path() + std::to_string(pieces) + "__" + std::to_string(d_depth) + "_" + std::to_string(settings::get_run_parallel()) +  ".csv";
+  std::string path = settings::get_eval_path() + std::to_string(settings::get_num_threads()) + "__" + std::to_string(d_depth) + "_" + std::to_string(settings::get_run_parallel()) +  ".csv";
 
   // Delete existing file
 //  remove(path.c_str());
@@ -92,6 +124,7 @@ void Test::test_fens(int pieces, int moves, int fens, int d_depth){
 //  std::cout << settings::get_fen_path() + "random_fens_" + std::to_string(pieces) << std::endl;
   std::string fen, turn, castling, enpassant, foo, bar;
   for(int i = 0; i < fens; i++){
+    table::ClearTable();
     // Load fen position
     infile >> fen >> turn >> castling >> enpassant >> foo >> bar;
 //    std::cout << fen << std::endl;
@@ -100,6 +133,7 @@ void Test::test_fens(int pieces, int moves, int fens, int d_depth){
 
 
     int cur_move = 0;
+    running = true;
     while(running && cur_move < moves){
       if(board.GetMoves().size() > 0) {
         Move white_move = go(board, path, d_depth, thds);

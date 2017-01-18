@@ -156,6 +156,27 @@ Score AlphaBeta(Board board, Score alpha, Score beta, Depth depth, Time end_time
   return alpha;
 }
 
+Depth starting_depth;
+
+static int get_num_threads(int num, int d){
+  int rest_threads = num;
+  int num_threads = 1;
+  for(int i = starting_depth-1; i>d; i--){
+    if(rest_threads == 6){
+      num_threads = 3;
+      rest_threads = 2;
+    }else {
+      if (rest_threads > 4) {
+        num_threads = 4;
+        rest_threads /= 4;
+      } else {
+        num_threads = rest_threads;
+        rest_threads = 1;
+      }
+    }
+  }
+  return num_threads;
+}
 
 Score ParallelAlphaBeta(Board board, Score alpha, Score beta, Depth depth, Time end_time) {
   debug::SearchDebug("ps t"+std::to_string(omp_get_thread_num())+" "+std::to_string(alpha)+","+std::to_string(beta), depth);
@@ -177,8 +198,9 @@ Score ParallelAlphaBeta(Board board, Score alpha, Score beta, Depth depth, Time 
     std::sort(moves.begin(), moves.end(), Sorter(entry.best_move));
   }
   bool go = true;
-  omp_set_num_threads(settings::get_num_threads());
+  int threads = get_num_threads(settings::get_num_threads(), depth);
   omp_set_nested(1);
+  omp_set_num_threads(threads);
   if (settings::use_YBWC) {
     Move first_move = moves[0];
     Score first_alpha;
@@ -198,7 +220,6 @@ Score ParallelAlphaBeta(Board board, Score alpha, Score beta, Depth depth, Time 
   }
 #pragma omp parallel
   {
-
     std::vector<Move> private_moves = moves;
     Score privateAlpha = alpha;
     Board privateBoard = board.copy();
@@ -207,7 +228,7 @@ Score ParallelAlphaBeta(Board board, Score alpha, Score beta, Depth depth, Time 
     if (settings::use_YBWC) {
       inc = 1;
     }
-    for (int i = omp_get_thread_num()+inc; i < private_moves.size(); i+=settings::get_num_threads()) {
+    for (int i = omp_get_thread_num()+inc; i < private_moves.size(); i+=threads) {
       if (!go || finished(end_time)){
         break;//already found better score then beta, skip rest of computation
       }
@@ -218,7 +239,7 @@ Score ParallelAlphaBeta(Board board, Score alpha, Score beta, Depth depth, Time 
         privateAlpha = alpha;
       }
       Score score;
-      if ((i<settings::get_num_threads() && !settings::use_YBWC) || is_null_window(privateAlpha, beta)) {
+      if ((i<threads && !settings::use_YBWC) || is_null_window(privateAlpha, beta)) {
         debug::SearchDebug("["+std::to_string(privateAlpha)+","+std::to_string(beta)+"] pt"+std::to_string(omp_get_thread_num()), depth);
         if (parallel_pattern(depth, privateAlpha, beta)) {
           score = -ParallelAlphaBeta(privateBoard, -beta, -privateAlpha, depth - 1, end_time);
@@ -308,6 +329,8 @@ Move TestDepthSearch(Board board, Depth depth, std::string file_path, int thds) 
   return TestSequentialSearch(board, depth, file_path);
 }
 
+
+
     Move SequentialSearch(Board board, Depth depth, Time end_time){
       // Measure complete search time
         parallel = false;
@@ -331,9 +354,9 @@ Move TestDepthSearch(Board board, Depth depth, std::string file_path, int thds) 
         //    file.open("/home/jonas/parallel-log.txt");
         //    file << "Move: " << parse::MoveToString(best_move) << std::endl;
         //    file.close();
-//        std::cout << "info " << "cp " << score << " pv "
-//                  << parse::MoveToString(best_move) << std::endl;
-//        std::cout << "Elapsed time (depth " << current_depth << "): " << elapsed_secs.count() << std::endl;
+        std::cout << "info " << "cp " << score << " pv "
+                  << parse::MoveToString(best_move) << std::endl;
+        std::cout << "Elapsed time (depth " << current_depth << "): " << elapsed_secs.count() << std::endl;
       }
 
       // Print elapsed search time
@@ -385,7 +408,6 @@ Move TestSequentialSearch(Board board, Depth depth, std::string file_path){
   return best_move;
 }
 
-Depth starting_depth;
 
 inline Time createEndTime() { return now()+std::chrono::hours(24); }
 
@@ -476,7 +498,10 @@ bool parallel_pattern(Depth depth, Score alpha, Score beta){//still use false fo
     if(!parallel){
         return false;
     }
-    return (5 == depth);// && depth < starting_depth && is_null_window(alpha, beta);//false;//starting_depth
+
+  //return depth ==6;
+    return (2 < depth) && (depth < starting_depth);// && is_null_window(alpha, beta);//false;//starting_depth
+
 }
 
 }

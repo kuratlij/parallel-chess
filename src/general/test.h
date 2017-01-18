@@ -13,7 +13,7 @@ public:
   void run(int game_number, int search_depth);
   void check_break(std::string foo);
   void test_fens(int pieces, int moves, int fens, int depth);
-  void big_test(int moves, int fens, int d_depth);
+  void big_test(int moves, int fens, int d_depth, bool parallel);
 
 
 private:
