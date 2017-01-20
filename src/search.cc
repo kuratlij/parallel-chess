@@ -330,15 +330,20 @@ Move SequentialSearch(Board board, Depth depth, Time end_time){
     // Measure search time
     Time begin = now();
     Score score = AlphaBeta(board, kMinScore, kMaxScore, current_depth, end_time);
+
+    Time end = now();
+
     if(!finished(end_time)){
       old_best_move = best_move;
+      auto time_used = std::chrono::duration_cast<Milliseconds>(end-begin);
+      std::cout << "info " << "depth " << current_depth << " time " << time_used.count()
+          << " score cp " << score << " pv " << parse::MoveToString(best_move) << std::endl;
     }
-    Time end = now();
-      std::chrono::duration<double> elapsed_secs = std::chrono::duration_cast<std::chrono::duration<double> >(end-begin);
 
-    std::cout << "info " << "cp " << score << " pv "
-              << parse::MoveToString(best_move) << std::endl;
-    std::cout << "Elapsed time (depth " << current_depth << "): " << elapsed_secs.count() << std::endl;
+    //std::chrono::duration<double> elapsed_secs = std::chrono::duration_cast<std::chrono::duration<double> >(end-begin);
+    //std::cout << "info " << "cp " << score << " pv "
+    //          << parse::MoveToString(best_move) << std::endl;
+    //std::cout << "Elapsed time (depth " << current_depth << "): " << elapsed_secs.count() << std::endl;
   }
 
   // Print elapsed search time
@@ -398,21 +403,22 @@ Move ParallelSearch(Board board, Depth depth, Time end_time){
     if(finished(end_time)){
       break;
     }
-
-    std::cout << std::endl << "depth: " << current_depth << std::endl;
     // Measure search time
     starting_depth=current_depth;
     Time begin = now();
     Score score = AlphaBeta(board, kMinScore, kMaxScore, current_depth, end_time);
+
+    Time end = now();
+
     if(!finished(end_time)){
       old_best_move = best_move;
+      auto time_used = std::chrono::duration_cast<Milliseconds>(end-begin);
+      std::cout << "info " << "depth " << current_depth << " time " << time_used.count()
+          << " score cp " << score << " pv " << parse::MoveToString(best_move) << std::endl;
     }
-    Time end = now();
-    std::chrono::duration<double> elapsed_secs = std::chrono::duration_cast<std::chrono::duration<double> >(end-begin);
 
-    std::cout << "info " << "cp " << score << " pv "
-              << parse::MoveToString(best_move) << std::endl;
-    std::cout << "Elapsed time (depth " << current_depth << "): " << elapsed_secs.count() << std::endl;
+    //std::chrono::duration<double> elapsed_secs = std::chrono::duration_cast<std::chrono::duration<double> >(end-begin);
+    //std::cout << "Elapsed time (depth " << current_depth << "): " << elapsed_secs.count() << std::endl;
   }
 
   // Print elapsed search time
