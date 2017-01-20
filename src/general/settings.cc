@@ -12,8 +12,8 @@ namespace {
 
 int num_threads=96;
 bool run_parallel = true;
-std::string eval_path = "../chess_eval/";
-std::string fen_path = "../fens/";
+std::string eval_path = "./chess_eval_24h_parallel_spinlock/";
+std::string fen_path = "./fens/";
 
 
 }

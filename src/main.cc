@@ -21,15 +21,16 @@ int main() {
   int amount_of_settings = 16;
 
   // The depth that is searched
-  int desired_depth = 8;
+  int desired_depth = 9;
 
   // Amount of moves that are searched per setting
   int moves_per_setting = 1;
 
   // Set to false to run sequential version
+  bool parallel = true;
 
   // Run the test
-  test.big_test(moves_per_setting, amount_of_settings, desired_depth, false);
+  test.big_test(moves_per_setting, amount_of_settings, desired_depth, parallel);
   //uci::Loop();
 //  debug::Print("Exiting Program", debug::kDebugMain);
   return 0;

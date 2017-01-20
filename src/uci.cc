@@ -156,7 +156,7 @@ void Loop() {
         Test test;
 //        test.run(game_nr, 5);
 //        test.test_fens(16,5,game_nr_or_fens, desired_depth);
-      test.big_test(1, game_nr_or_fens, desired_depth);
+      test.big_test(1, game_nr_or_fens, desired_depth, true);
     }
     else {
       Reply("Received unknown command: " + command);

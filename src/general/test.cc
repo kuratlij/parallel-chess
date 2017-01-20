@@ -43,9 +43,14 @@ void fen(Board b, std::string fen_code, std::string turn, std::string castling_r
   b.SetBoard(fen_code, turn, castling_rights);
 }
 
-void Test::big_test(int moves, int fens, int d_depth){
+void Test::big_test(int moves, int fens, int d_depth, bool parallel){
 //  int threads[] = {1,2,4,8,12,16,24,32,64,96};
-  int threads[] = {1,2,4,8,16,32,64,128,256};
+  if(parallel){
+    settings::set_run_parallel(true);
+  }else{
+    settings::set_run_parallel(false);
+  }
+  int threads[] = {1,2,4,8,16,32,64,128,256,512};
   for(int pieces = 16; pieces <= 20; pieces += 8){
     if(pieces == 36){
       pieces = 32;
@@ -60,11 +65,16 @@ void Test::big_test(int moves, int fens, int d_depth){
         start_ts = 7;
       }
       start_ts = 0;
-      for(int ts = start_ts; ts < 9; ts++) {
+      for(int ts = start_ts; ts < 10; ts++) {
+
 
         int ts_for_test = threads[ts];
         settings::set_num_threads(ts_for_test);
         test_fens(pieces, ts_for_test, fens, d);
+
+        if(!parallel){
+          ts = 100;
+        }
 
         // Collect all averages in single file
         std::string path = settings::get_eval_path() + std::to_string(settings::get_num_threads()) + "__" + std::to_string(d) + "_" + std::to_string(settings::get_run_parallel()) +  ".csv";
