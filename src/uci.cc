@@ -31,6 +31,41 @@ const std::string kEngineNamePrefix = "id name ";
 const std::string kEngineAuthorPrefix = "id author ";
 const std::string kOk = "uciok";
 
+struct Timer {
+  Timer() {
+    for (Color color = kWhite; color <= kBlack; color++) {
+      time[color] = 0;
+      inc[color] = 0;
+    }
+    movetime = 0;
+    moves_to_go = 0;
+    search_depth = 0;
+  }
+  int time[2], inc[2], movetime;
+  Depth moves_to_go, search_depth;
+};
+
+int maxtime(int time) {
+  return std::max((9 * time) / 10, time - 100);
+}
+
+Move Go(Board &board, Timer timer) {
+  if (timer.search_depth != 0) {
+    return search::DepthSearch(board, timer.search_depth);
+  }
+  if (timer.movetime != 0) {
+    Milliseconds duration = Milliseconds(maxtime(timer.movetime));
+    return search::TimeSearch(board, duration);
+  }
+  if (timer.moves_to_go == 0) {
+    timer.moves_to_go = 40;
+  }
+  Color color = board.get_turn();
+  int time = (timer.time[color] / timer.moves_to_go) + timer.inc[color];
+  Milliseconds duration = Milliseconds(maxtime(time));
+  return search::TimeSearch(board, duration);
+}
+
 
 }
 
@@ -111,21 +146,40 @@ void Loop() {
       }
     }
     else if (Equals(command, "go")) {
-      Move move;
-      if (tokens.size() == index+2) {
-        std::string arg = tokens[index++];
-        if(Equals(arg, "depth")){
-          Depth depth = atoi(tokens[index++].c_str());
-          move = search::DepthSearch(board, depth);
-        } else if(Equals(arg, "movetime")){
-          Milliseconds duration = Milliseconds(atoi(tokens[index++].c_str()));
-          move = search::TimeSearch(board, duration);
-        }
-      }else{
-        move = search::DepthSearch(board, 6);
-      }
-      board.Make(move);
-      std::cout << "bestmove " << parse::MoveToString(move) << std::endl;
+       Move move = 0;
+       if (tokens.size() >= index+2) {
+         Timer timer;
+         while (tokens.size() >= index+2) {
+           std::string arg = tokens[index++];
+           if(Equals(arg, "depth")){
+             timer.search_depth = atoi(tokens[index++].c_str());
+           }
+           else if(Equals(arg, "movetime")){
+             timer.movetime = atoi(tokens[index++].c_str());
+           }
+           else if(Equals(arg, "wtime")){
+             timer.time[kWhite] = atoi(tokens[index++].c_str());
+           }
+           else if(Equals(arg, "btime")){
+             timer.time[kBlack] = atoi(tokens[index++].c_str());
+           }
+           else if(Equals(arg, "winc")){
+             timer.inc[kWhite] = atoi(tokens[index++].c_str());
+           }
+           else if(Equals(arg, "binc")){
+             timer.inc[kBlack] = atoi(tokens[index++].c_str());
+           }
+           else if(Equals(arg, "movestogo")){
+             timer.moves_to_go = atoi(tokens[index++].c_str());
+           }
+         }
+         move = Go(board, timer);
+       }
+       else {
+         move = search::DepthSearch(board, 6);
+       }
+       board.Make(move);
+       std::cout << "bestmove " << parse::MoveToString(move) << std::endl;
     }
     else if (Equals(command, "perft")) {
       Depth depth = atoi(tokens[index++].c_str());
